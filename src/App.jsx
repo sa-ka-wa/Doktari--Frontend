@@ -1,11 +1,18 @@
+import React from "react";
+import AppRouter from "./router";
+import { AuthProvider } from "./context/AuthContext";
+import { BrandProvider } from "./context/BrandContext";
 import "./App.css";
 
 function App() {
   return (
-    <div className="App">
-      <h1>Your T-Shirt Customization App</h1>
-      {/* Add your router and main layout here */}
-    </div>
+    <BrandProvider>
+      <AuthProvider>
+        <div className="App">
+          <AppRouter />
+        </div>
+      </AuthProvider>
+    </BrandProvider>
   );
 }
 
