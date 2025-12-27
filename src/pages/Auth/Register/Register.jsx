@@ -8,39 +8,62 @@ import { useBrand } from "../../../context/BrandContext";
 const Register = () => {
   const navigate = useNavigate();
   const { brand } = useBrand();
-
   const handleRegister = async (formData) => {
+    if (!brand?.id) {
+      alert(
+        "Brand not detected. Please check your subdomain or refresh the page."
+      );
+      return;
+    }
+
+    const payload = {
+      ...formData,
+      brand_id: brand.id,
+      role: "customer",
+    };
+
     try {
-      // ✅ include brand_id in payload
-      const payload = {
-        ...formData,
-        brand_id: brand?.id,
-        role: "customer", // default role for registration
-      };
-      console.log("📦 Sending registration data:", payload);
-      // ✅ Call your backend service
       const res = await authService.register(payload);
-
-      // ✅ Check what the backend returned
-      if (res?.access_token) {
-        localStorage.setItem("token", res.access_token);
-      }
-      if (res?.user) {
-        localStorage.setItem("user", JSON.stringify(res.user));
-      }
-
-      // ✅ Option 1: Go straight to profile
-      // navigate("/profile");
-
-      // ✅ Option 2 (optional): Redirect to login
+      console.log("Registered user:", res);
       navigate("/login");
     } catch (err) {
       console.error("Registration failed:", err);
-      alert(
-        err.response?.data?.message || "Registration failed. Please try again."
-      );
+      alert(err.response?.data?.message || "Registration failed.");
     }
   };
+
+  // const handleRegister = async (formData) => {
+  //   try {
+  //     // ✅ include brand_id in payload
+  //     const payload = {
+  //       ...formData,
+  //       brand_id: brand?.id,
+  //       role: "customer", // default role for registration
+  //     };
+  //     console.log("📦 Sending registration data:", payload);
+  //     // ✅ Call your backend service
+  //     const res = await authService.register(payload);
+
+  //     // ✅ Check what the backend returned
+  //     if (res?.access_token) {
+  //       localStorage.setItem("token", res.access_token);
+  //     }
+  //     if (res?.user) {
+  //       localStorage.setItem("user", JSON.stringify(res.user));
+  //     }
+
+  //     // ✅ Option 1: Go straight to profile
+  //     // navigate("/profile");
+
+  //     // ✅ Option 2 (optional): Redirect to login
+  //     navigate("/login");
+  //   } catch (err) {
+  //     console.error("Registration failed:", err);
+  //     alert(
+  //       err.response?.data?.message || "Registration failed. Please try again."
+  //     );
+  //   }
+  // };
 
   return (
     <div className="register-page">

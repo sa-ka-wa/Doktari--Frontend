@@ -1,0 +1,131 @@
+.user-management {
+  padding: var(--space-lg);
+}
+
+.users-table {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(139, 69, 19, 0.1);
+  overflow: hidden;
+}
+
+.users-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users-table thead {
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--afro-earth) 100%
+  );
+}
+
+.users-table thead th {
+  color: var(--text-light);
+  font-weight: 600;
+  text-align: left;
+  padding: var(--space-lg);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.users-table tbody tr {
+  transition: all var(--transition-fast);
+  border-bottom: 1px solid rgba(139, 69, 19, 0.1);
+}
+
+.users-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.users-table tbody tr:hover {
+  background: rgba(75, 0, 130, 0.02);
+  transform: translateX(4px);
+}
+
+.users-table tbody td {
+  padding: var(--space-lg);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.users-table tbody td:first-child {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Status and Role Styles */
+.users-table .status,
+.users-table .role {
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-block;
+}
+
+.users-table .status.active {
+  background: rgba(34, 139, 34, 0.1);
+  color: var(--success);
+  border: 1px solid rgba(34, 139, 34, 0.2);
+}
+
+.users-table .status.inactive {
+  background: rgba(220, 20, 60, 0.1);
+  color: var(--error);
+  border: 1px solid rgba(220, 20, 60, 0.2);
+}
+
+.users-table .role.admin {
+  background: rgba(75, 0, 130, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(75, 0, 130, 0.2);
+}
+
+.users-table .role.customer {
+  background: rgba(139, 69, 19, 0.1);
+  color: var(--afro-earth);
+  border: 1px solid rgba(139, 69, 19, 0.2);
+}
+
+/* Table Actions */
+.users-table tbody td:last-child {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .users-table {
+    overflow-x: auto;
+  }
+
+  .users-table table {
+    min-width: 800px;
+  }
+}
+
+@media (max-width: 768px) {
+  .section-header {
+    flex-direction: column;
+    gap: var(--space-md);
+    text-align: center;
+  }
+
+  .users-table tbody td:last-child {
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .btn-sm {
+    width: 100%;
+    justify-content: center;
+  }
+}
