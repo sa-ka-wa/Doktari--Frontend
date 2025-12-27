@@ -1,140 +1,51 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import "./Register.css";
+import React from "react";
+import RegisterForm from "../../../components/auth/RegisterForm/RegisterForm";
+import authService from "../../../services/api/authService"; // ✅ handle API logic here
+import { useNavigate } from "react-router-dom";
+import "../../../components/auth/RegisterForm/RegisterForm.css";
+import { useBrand } from "../../../context/BrandContext";
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { brand } = useBrand();
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      setLoading(false);
-      return;
-    }
-
+  const handleRegister = async (formData) => {
     try {
-      // TODO: Replace with actual API call
-      console.log("Registration attempt:", formData);
+      // ✅ include brand_id in payload
+      const payload = {
+        ...formData,
+        brand_id: brand?.id,
+        role: "customer", // default role for registration
+      };
+      console.log("📦 Sending registration data:", payload);
+      // ✅ Call your backend service
+      const res = await authService.register(payload);
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // ✅ Check what the backend returned
+      if (res?.access_token) {
+        localStorage.setItem("token", res.access_token);
+      }
+      if (res?.user) {
+        localStorage.setItem("user", JSON.stringify(res.user));
+      }
 
-      // For now, just store a dummy token and redirect
-      localStorage.setItem("authToken", "dummy-token-for-development");
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: 1,
-          email: formData.email,
-          name: formData.name,
-          role: "customer",
-        })
-      );
+      // ✅ Option 1: Go straight to profile
+      // navigate("/profile");
 
-      navigate("/");
+      // ✅ Option 2 (optional): Redirect to login
+      navigate("/login");
     } catch (err) {
-      setError("Registration failed. Please try again.");
-    } finally {
-      setLoading(false);
+      console.error("Registration failed:", err);
+      alert(
+        err.response?.data?.message || "Registration failed. Please try again."
+      );
     }
   };
 
   return (
     <div className="register-page">
-      <div className="register-container">
-        <div className="register-header">
-          <h1>Create Account</h1>
-          <p>Join us and start shopping</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="register-form">
-          {error && <div className="error-message">{error}</div>}
-
-          <div className="form-group">
-            <label htmlFor="name">Full Name</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              placeholder="Enter your full name"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="email">Email Address</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              placeholder="Enter your email"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              placeholder="Create a password"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-              placeholder="Confirm your password"
-            />
-          </div>
-
-          <button type="submit" className="register-btn" disabled={loading}>
-            {loading ? "Creating Account..." : "Create Account"}
-          </button>
-        </form>
-
-        <div className="register-footer">
-          <p>
-            Already have an account?{" "}
-            <Link to="/login" className="link">
-              Sign in here
-            </Link>
-          </p>
-        </div>
-      </div>
+      {/* Pass the handler down to the form */}
+      <RegisterForm onRegister={handleRegister} />
     </div>
   );
 };

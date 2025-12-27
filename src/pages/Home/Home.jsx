@@ -1,66 +1,60 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
 import "./Home.css";
+import { Header } from "../../components/common/layout"; // shared import
+// Correct import paths - adjust based on your actual folder structure
+import MusicHero from "../../components/brand/MusicHero/MusicHero";
+import ArtistSpotlight from "../../components/brand/ArtistSpotlight/ArtistSpotlight";
+import AlbumCollection from "../../components/brand/AlbumCollection/AlbumCollection";
+import CulturalStory from "../../components/brand/CulturalStory/CulturalStory";
 
 const Home = () => {
+  const [brand, setBrand] = useState("Doktari");
+  useEffect(() => {
+    // 1️⃣ Detect current subdomain
+    const hostname = window.location.hostname;
+    const subdomain = hostname.split(".")[0]; // e.g. 'doktari' from 'doktari.lvh.me'
+
+    console.log("Detected subdomain:", subdomain);
+
+    // 2️⃣ Send to backend if detected
+    if (subdomain && subdomain !== "www" && subdomain !== "localhost") {
+      fetch("http://localhost:5000/api/brands/update-subdomain", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ subdomain }),
+      })
+        .then((res) => res.json())
+        .then((data) => console.log("Subdomain saved:", data))
+        .catch((err) => console.error("Error saving subdomain:", err));
+    }
+  }, []);
+
   return (
     <div className="home">
+      {/* Shared Header */}
+      <Header brand="Doktari" />
+
       {/* Hero Section */}
-      <section className="hero">
-        <div className="hero-content">
-          <h1 className="hero-title">Welcome to Our T-Shirt Store</h1>
-          <p className="hero-subtitle">
-            Design your own custom t-shirts or explore our amazing collection
-          </p>
-          <div className="hero-actions">
-            <Link to="/products/catalog" className="btn btn-primary">
-              Shop Now
-            </Link>
-            <Link to="/custom-design" className="btn btn-secondary">
-              Custom Design
-            </Link>
-          </div>
-        </div>
+      <MusicHero />
+
+      {/* Artist Spotlight */}
+      <section className="section">
+        <h2 className="section-title">Artist Spotlight</h2>
+        <ArtistSpotlight />
       </section>
 
-      {/* Features Section */}
-      <section className="features">
-        <div className="container">
-          <h2 className="section-title">Why Choose Us</h2>
-          <div className="features-grid">
-            <div className="feature-card">
-              <div className="feature-icon">🎨</div>
-              <h3>Custom Designs</h3>
-              <p>Create unique t-shirts with our easy-to-use design tools</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">🚚</div>
-              <h3>Fast Shipping</h3>
-              <p>Get your orders delivered quickly anywhere</p>
-            </div>
-            <div className="feature-card">
-              <div className="feature-icon">⭐</div>
-              <h3>Premium Quality</h3>
-              <p>High-quality materials and printing techniques</p>
-            </div>
-          </div>
-        </div>
+      {/* Album Collection */}
+      <section className="section">
+        <h2 className="section-title">Limited Edition Collections</h2>
+        <AlbumCollection />
       </section>
 
-      {/* Popular Products Preview */}
-      <section className="popular-products">
-        <div className="container">
-          <h2 className="section-title">Featured Products</h2>
-          <div className="products-preview">
-            {/* You can add product preview cards here */}
-            <div className="preview-placeholder">
-              <p>Featured products will be displayed here</p>
-              <Link to="/products/catalog" className="btn btn-outline">
-                View All Products
-              </Link>
-            </div>
-          </div>
-        </div>
+      {/* Cultural Story */}
+      <section className="section">
+        <h2 className="section-title">The DOKTARI Story</h2>
+        <CulturalStory />
       </section>
     </div>
   );

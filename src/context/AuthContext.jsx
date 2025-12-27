@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { authService } from "../services/api/authService";
+import authService from "../services/api/authService";
 
 // Create the context
 const AuthContext = createContext();
@@ -19,27 +19,24 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on app start
-    const token = localStorage.getItem("authToken");
+    // Get user from localStorage
     const storedUser = authService.getStoredUser();
 
-    if (token && storedUser) {
+    if (storedUser) {
       setUser(storedUser);
 
-      // Optional: Verify token with backend
+      // Verify token with backend
       authService
-        .getCurrentUser()
+        .getProfile()
         .then((userData) => {
           setUser(userData);
         })
         .catch(() => {
-          // Token is invalid, clear it
+          // Token invalid or expired
           authService.logout();
           setUser(null);
         })
-        .finally(() => {
-          setLoading(false);
-        });
+        .finally(() => setLoading(false));
     } else {
       setLoading(false);
     }
@@ -47,8 +44,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await authService.login({ email, password });
-      setUser(response.user);
+      const response = await authService.login(email, password);
+      setUser(response.user || response); // depending on backend structure
       return response;
     } catch (error) {
       throw error;
@@ -58,7 +55,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const response = await authService.register(userData);
-      setUser(response.user);
+      setUser(response.user || response);
       return response;
     } catch (error) {
       throw error;

@@ -1,0 +1,185 @@
+.header {
+  background: linear-gradient(90deg, #000000, #111111);
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 2.5rem;
+  border-bottom: 3px solid #f03a47; /* Afrobeat red line */
+  font-family: "Poppins", sans-serif;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+/* Brand name */
+.header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.header h1 span {
+  color: #f8d210; /* Afrobeat gold accent */
+  font-style: italic;
+  font-weight: 800;
+}
+
+/* Navigation links */
+.header nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.header nav a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.header nav a:hover {
+  color: #f03a47; /* vibrant red hover */
+}
+
+.header nav a::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  height: 2px;
+  width: 0;
+  background: #f03a47;
+  transition: width 0.3s ease;
+}
+
+.header nav a:hover::after {
+  width: 100%;
+}
+
+/* Login Button */
+.header nav a:last-child {
+  background: #f8d210;
+  color: #000;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.header nav a:last-child:hover {
+  background: #f03a47;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    padding: 1rem 1.5rem;
+    text-align: center;
+  }
+
+  .header nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+
+  .header nav a {
+    font-size: 0.95rem;
+    margin: 0.3rem;
+  }
+}
+/* Remove yellow background for profile button */
+.profile-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 1rem;
+  background: none; /* remove yellow background */
+}
+
+.profile-btn img {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-btn img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Override generic last-child styles so it doesn't apply to profile-btn */
+.header nav a:last-child {
+  background: #f8d210; /* Keep this for login/register only */
+  color: #000;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.header nav a:last-child.profile-btn {
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+
+.profile-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+}
+.profile-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 48px; /* just below avatar */
+  right: 0;
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+  z-index: 100;
+}
+
+.dropdown-menu a {
+  padding: 0.5rem 1rem;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.dropdown-menu a:hover {
+  background: #f03a47;
+}

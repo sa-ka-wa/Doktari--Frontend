@@ -1,60 +1,50 @@
-import apiClient from "./apiClient";
+import apiClient from "./apiClient.js";
 
-export const authService = {
-  async login(credentials) {
-    const response = await apiClient.post("/auth/login", credentials);
-    const data = response.data;
-
-    // ✅ Store token and user info after successful login
-    if (data.access_token) {
-      localStorage.setItem("authToken", data.access_token);
-    }
-
-    if (data.user) {
-      localStorage.setItem("user", JSON.stringify(data.user));
-    }
-
-    return data;
-  },
-
-  async register(userData) {
-    const response = await apiClient.post("/auth/register", userData);
-    const data = response.data;
-
-    // ✅ Store token and user info after successful registration
-    if (data.access_token) {
-      localStorage.setItem("authToken", data.access_token);
-    }
-
-    if (data.user) {
-      localStorage.setItem("user", JSON.stringify(data.user));
-    }
-
-    return data;
-  },
-
-  async getCurrentUser() {
-    const response = await apiClient.get("/auth/me");
+const authService = {
+  /**
+   * Login user with email and password
+   */
+  async login(email, password) {
+    const response = await apiClient.post("/auth/login", { email, password });
+    // Save user in localStorage for persistence
+    localStorage.setItem("user", JSON.stringify(response.data));
+    localStorage.setItem("authToken", response.data.token);
     return response.data;
   },
 
-  async logout() {
-    // Clear local storage
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("user");
-
-    // You might also want to call a backend logout endpoint
-    // await apiClient.post('/auth/logout');
+  /**
+   * Register a new user
+   */
+  async register(userData) {
+    const response = await apiClient.post("/auth/register", userData);
+    localStorage.setItem("user", JSON.stringify(response.data));
+    localStorage.setItem("authToken", response.data.token);
+    return response.data;
   },
 
-  // Check if user is authenticated
-  isAuthenticated() {
-    return !!localStorage.getItem("authToken");
+  /**
+   * Fetch logged-in user's profile
+   */
+  async getProfile() {
+    const response = await apiClient.get("/auth/profile");
+    return response.data;
   },
 
-  // Get stored user info
+  /**
+   * Get the stored user from localStorage
+   */
   getStoredUser() {
-    const userStr = localStorage.getItem("user");
-    return userStr ? JSON.parse(userStr) : null;
+    const user = localStorage.getItem("user");
+    return user ? JSON.parse(user) : null;
+  },
+
+  /**
+   * Logout the user
+   */
+  logout() {
+    localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
   },
 };
+
+export default authService;
