@@ -1,15 +1,63 @@
+// src/components/common/Button/Button.jsx
 import React from "react";
+import "./Button.css";
 
-const Button = ({ children, onClick, variant = "primary" }) => {
-  const base = "px-4 py-2 rounded-md font-semibold transition";
-  const styles = {
-    primary: "bg-blue-600 text-white hover:bg-blue-700",
-    secondary: "bg-gray-200 text-black hover:bg-gray-300",
-  };
+const Button = ({
+  children,
+  variant = "primary",
+  size = "medium",
+  type = "button",
+  disabled = false,
+  loading = false,
+  icon,
+  iconPosition = "left",
+  onClick,
+  className = "",
+  ...props
+}) => {
+  const buttonClasses = [
+    "btn",
+    `btn-${variant}`,
+    `btn-${size}`,
+    disabled ? "btn-disabled" : "",
+    loading ? "btn-loading" : "",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <button onClick={onClick} className={`${base} ${styles[variant]}`}>
-      {children}
+    <button
+      type={type}
+      className={buttonClasses}
+      onClick={onClick}
+      disabled={disabled || loading}
+      {...props}
+    >
+      {loading && (
+        <span className="btn-spinner">
+          <svg className="spinner" viewBox="0 0 50 50">
+            <circle
+              className="path"
+              cx="25"
+              cy="25"
+              r="20"
+              fill="none"
+              strokeWidth="5"
+            ></circle>
+          </svg>
+        </span>
+      )}
+
+      {!loading && icon && iconPosition === "left" && (
+        <span className="btn-icon btn-icon-left">{icon}</span>
+      )}
+
+      <span className="btn-content">{children}</span>
+
+      {!loading && icon && iconPosition === "right" && (
+        <span className="btn-icon btn-icon-right">{icon}</span>
+      )}
     </button>
   );
 };

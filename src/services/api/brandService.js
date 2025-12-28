@@ -62,6 +62,46 @@ const brandService = {
     });
     return response.data;
   },
+
+  // Admin: Get brands with pagination and filters
+  getAdminBrands: async (params = {}) => {
+    try {
+      const response = await apiClient.get("/api/admin/brands", { params });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching admin brands:", error);
+      throw error;
+    }
+  },
+
+  // Admin: Get brand analytics
+  getBrandAnalytics: async (brandId) => {
+    try {
+      const response = await apiClient.get(
+        `/api/admin/brands/${brandId}/analytics`
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching brand analytics:", error);
+      throw error;
+    }
+  },
+
+  // Admin: Get brand performance metrics
+  getBrandPerformance: async (brandId, period = "monthly") => {
+    try {
+      const response = await apiClient.get(
+        `/api/admin/brands/${brandId}/performance`,
+        {
+          params: { period },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching brand performance:", error);
+      throw error;
+    }
+  },
 };
 
 export default brandService;

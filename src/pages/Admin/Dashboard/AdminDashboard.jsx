@@ -27,12 +27,12 @@ const AdminDashboard = () => {
           <h2>Admin Panel</h2>
         </div>
         <nav className="sidebar-nav">
-          <Link
+          {/* <Link
             to="/admin/dashboard"
             className={`nav-link ${isActive("/dashboard") ? "active" : ""}`}
           >
             📊 Dashboard
-          </Link>
+          </Link> */}
           <Link
             to="/admin/brands"
             className={`nav-link ${isActive("/brands") ? "active" : ""}`}

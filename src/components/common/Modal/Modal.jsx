@@ -23,17 +23,109 @@
 // };
 
 // export default Modal;
-import React from "react";
+
+// import React from "react";
+// import "./Modal.css";
+
+// const Modal = ({ children, onClose }) => {
+//   return (
+//     <div className="modal-backdrop" onClick={onClose}>
+//       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+//         <button className="modal-close" onClick={onClose}>
+//           &times;
+//         </button>
+//         {children}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Modal;
+
+// src/components/common/Modal/Modal.jsx
+import React, { useEffect } from "react";
 import "./Modal.css";
 
-const Modal = ({ children, onClose }) => {
+const Modal = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  size = "md",
+  showCloseButton = true,
+  className = "",
+  overlayClassName = "",
+  ...props
+}) => {
+  // Close on Escape key
+  useEffect(() => {
+    const handleEsc = (event) => {
+      if (event.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("keydown", handleEsc);
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleEsc);
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  const modalClasses = ["modal", `modal-${size}`, className]
+    .filter(Boolean)
+    .join(" ");
+
+  const overlayClasses = ["modal-overlay", overlayClassName]
+    .filter(Boolean)
+    .join(" ");
+
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>
-          &times;
-        </button>
-        {children}
+    <div className={overlayClasses} onClick={handleOverlayClick}>
+      <div className={modalClasses} role="dialog" aria-modal="true" {...props}>
+        {/* Header */}
+        {(title || showCloseButton) && (
+          <div className="modal-header">
+            {title && <h2 className="modal-title">{title}</h2>}
+            {showCloseButton && (
+              <button
+                type="button"
+                className="modal-close"
+                onClick={onClose}
+                aria-label="Close modal"
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Body */}
+        <div className="modal-body">{children}</div>
       </div>
     </div>
   );
