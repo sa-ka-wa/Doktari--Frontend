@@ -50,6 +50,17 @@ export const productService = {
       throw error;
     }
   },
+   getProductsByBrandId: async (brandId, params = {}) => {
+  try {
+    const response = await apiClient.get(`/products/brand/${brandId}`, {
+      params: { ...params }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching brand products:', error);
+    throw error;
+  }
+},
 
   // Create product (admin only)
   createProduct: async (productData) => {

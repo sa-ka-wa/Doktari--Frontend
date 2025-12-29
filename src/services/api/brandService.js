@@ -33,6 +33,15 @@ const brandService = {
     });
     return response.data;
   },
+    async getBrandById(brandId) {
+    try {
+      const response = await apiClient.get(`/brands/${brandId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching brand with ID ${brandId}:`, error);
+      throw error;
+    }
+  },
 
   // ❌ WRONG: Remove /api prefix since apiClient already adds it
   getAdminBrands: async (params = {}) => {

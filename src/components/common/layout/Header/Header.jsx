@@ -51,7 +51,7 @@ const Header = ({ brand = "Prolific" }) => {
         {isProlific ? (
           <>
             <Link to="/">Home</Link>
-            <Link to="/collections">Collections</Link>
+            <Link to="/brands">Brands</Link>
             <Link to="/artists">Artists</Link>
             <Link to="/gallery">Gallery</Link>
             <Link to="/about">About</Link>
@@ -59,8 +59,8 @@ const Header = ({ brand = "Prolific" }) => {
         ) : (
           <>
             <Link to="/">Home</Link>
-            <Link to="/collections">Collections</Link>
-            <Link to="/artists">Artists</Link>
+            <Link to="/brands">Brands</Link>
+            <Link to="/products/catalog">Products</Link>
             <Link to="/about">About</Link>
             <Link to="/contact">Contact</Link>
           </>

@@ -8,19 +8,31 @@ import './ProductCard.css';
 const ProductCard = ({ product, onClick, showBrand = true }) => {
   const [imageError, setImageError] = useState(false);
 
+  // Safely destructure with defaults
   const {
     id,
-    title,
-    image_url,
-    price,
-    category,
-    brand_name,
+    name = '', // Changed from title to name
+    image_url = '', // Might be image_url or imageUrl
+    price = 0,
+    category = '',
+    brand, // This might be an object with name property
     brand_id,
     stock_quantity = 0,
-    has_3d_model,
-    style_tag,
-    artist
+    has_3d_model = false,
+    style_tag = '',
+    artist = '',
+    description = ''
   } = product;
+
+  // Safely get brand name
+  const brandName = brand?.name || product.brand_name || 'Unknown Brand';
+  const brandId = brand?.id || brand_id || product.brand_id;
+  
+  // Safely get image URL
+  const imageUrl = image_url || product.imageUrl || product.image_url || '';
+  
+  // Safely get title/name
+  const productTitle = name || product.title || product.name || 'Untitled Product';
 
   const handleImageError = () => {
     setImageError(true);
@@ -43,6 +55,11 @@ const ProductCard = ({ product, onClick, showBrand = true }) => {
 
   const stockStatus = getStockStatus();
 
+  // Format price safely
+  const formattedPrice = typeof price === 'number' 
+    ? `$${price.toFixed(2)}` 
+    : `$${parseFloat(price || 0).toFixed(2)}`;
+
   return (
     <Card 
       className="product-card" 
@@ -51,10 +68,10 @@ const ProductCard = ({ product, onClick, showBrand = true }) => {
       onClick={handleCardClick}
     >
       <div className="product-image-container">
-        {!imageError ? (
+        {!imageError && imageUrl ? (
           <img 
-            src={image_url} 
-            alt={title} 
+            src={imageUrl} 
+            alt={productTitle} 
             className="product-image"
             loading="lazy"
             onError={handleImageError}
@@ -86,17 +103,17 @@ const ProductCard = ({ product, onClick, showBrand = true }) => {
 
       <div className="product-info">
         <div className="product-header">
-          <h3 className="product-title" title={title}>
-            {title}
+          <h3 className="product-title" title={productTitle}>
+            {productTitle}
           </h3>
           
-          {showBrand && brand_name && (
+          {showBrand && brandName && (
             <Link 
-              to={`/brands/${brand_id}`} 
+              to={`/brands/${brandId}`} 
               className="product-brand-link"
               onClick={(e) => e.stopPropagation()}
             >
-              <span className="product-brand">{brand_name}</span>
+              <span className="product-brand">{brandName}</span>
             </Link>
           )}
 
@@ -107,7 +124,7 @@ const ProductCard = ({ product, onClick, showBrand = true }) => {
 
         <div className="product-meta">
           <div className="product-price-section">
-            <div className="product-price">${price.toFixed(2)}</div>
+            <div className="product-price">{formattedPrice}</div>
             {category && (
               <span className="product-category">{category}</span>
             )}
@@ -123,10 +140,18 @@ const ProductCard = ({ product, onClick, showBrand = true }) => {
           )}
         </div>
 
+        {description && (
+          <div className="product-description">
+            {description.length > 100 
+              ? `${description.substring(0, 100)}...` 
+              : description}
+          </div>
+        )}
+
         <div className="product-footer">
           <div className="product-actions">
             <Link 
-              to={`/products/detail/${id}`} 
+              to={`/products/${id}`} // Changed from /products/detail/${id}
               onClick={(e) => e.stopPropagation()}
               className="view-details-link"
             >
