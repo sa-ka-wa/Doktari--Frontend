@@ -71,8 +71,8 @@ const ProductCatalog = () => {
     break;
   case "newest":
     result = [...result].sort((a, b) => {
-      const dateA = a?.createdAt ? new Date(a.createdAt) : new Date(0);
-      const dateB = b?.createdAt ? new Date(b.createdAt) : new Date(0);
+      const dateA = a?.created_at ? new Date(a.created_at) : new Date(0);
+      const dateB = b?.created_at ? new Date(b.created_at) : new Date(0);
       return dateB - dateA;
     });
     break;

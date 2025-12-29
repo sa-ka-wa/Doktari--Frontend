@@ -30,7 +30,7 @@ export const productService = {
   // Get single product by ID
   getProductById: async (productId) => {
     try {
-      const response = await apiClient.get(`/products/${productId}/`);
+      const response = await apiClient.get(`/products/${productId}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching product:', error);

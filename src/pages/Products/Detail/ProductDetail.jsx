@@ -1,25 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useProduct } from "../../../hooks/useProducts"; // Updated import
+import { useProduct } from "../../../hooks/useProducts";
 import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import "./ProductDetail.css";
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { product, loading, error } = useProduct(id); // Using the new hook
+  
+  // Use the hook - it returns { product, loading, error }
+  const { product, loading, error } = useProduct(id);
+  
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
 
   useEffect(() => {
+    console.log("Product data:", product);
+    console.log("Loading:", loading);
+    console.log("Error:", error);
+
     if (product) {
-      // Set default selections based on available options
-      setSelectedSize(product.sizes?.[0] || "");
-      setSelectedColor(product.colors?.[0] || "");
+      // Map backend properties to frontend expectations
+      const size = product.size || product.title?.match(/\((\w+)\)/)?.[1] || "One Size";
+      const color = product.color || "Default";
+      
+      setSelectedSize(size);
+      setSelectedColor(color);
     }
-  }, [product]);
+  }, [product, loading, error]);
 
   const handleAddToCart = () => {
     if (!selectedSize || !selectedColor) {
@@ -34,12 +44,12 @@ const ProductDetail = () => {
 
     const cartItem = {
       id: product.id,
-      name: product.name,
+      name: product.title || product.name, // Use title from backend
       price: product.price,
       size: selectedSize,
       color: selectedColor,
       quantity: quantity,
-      image: product.image,
+      image: product.image_url || product.image, // Use image_url from backend
       product_type: product.product_type,
       style_tag: product.style_tag,
       artist: product.artist,
@@ -56,7 +66,7 @@ const ProductDetail = () => {
   };
 
   const increaseQuantity = () => {
-    if (quantity < product.stock_quantity) {
+    if (product && quantity < (product.stock_quantity || 0)) {
       setQuantity((prev) => prev + 1);
     }
   };
@@ -93,9 +103,16 @@ const ProductDetail = () => {
     );
   }
 
-  const images = product.images || [product.image];
-  const sizes = product.sizes || ["One Size"];
-  const colors = product.colors || ["Default"];
+  // Map backend properties to frontend expectations
+  const productName = product.title || product.name || "Unnamed Product";
+  const productImage = product.image_url || product.image || "/images/placeholder-tshirt.jpg";
+  const productImages = [productImage];
+  const productSizes = product.size ? [product.size] : ["One Size"];
+  const productColors = product.color ? [product.color] : ["Default"];
+  const inStock = (product.stock_quantity || 0) > 0;
+  const stockQuantity = product.stock_quantity || 0;
+  const productBrand = product.brand_name || product.brand?.name || "Unknown Brand";
+  const productDescription = product.description || product.fullDescription || "";
 
   return (
     <div className="product-detail">
@@ -106,7 +123,7 @@ const ProductDetail = () => {
           <span>/</span>
           <Link to="/products/catalog">Products</Link>
           <span>/</span>
-          <span>{product.name}</span>
+          <span>{productName}</span>
         </nav>
 
         <div className="product-detail-content">
@@ -114,8 +131,8 @@ const ProductDetail = () => {
           <div className="product-images">
             <div className="main-image">
               <img
-                src={images[activeImage]}
-                alt={product.name}
+                src={productImages[activeImage]}
+                alt={productName}
                 onError={(e) => {
                   e.target.src = "/images/placeholder-tshirt.jpg";
                 }}
@@ -126,19 +143,17 @@ const ProductDetail = () => {
                 </div>
               )}
             </div>
-            {images.length > 1 && (
+            {productImages.length > 1 && (
               <div className="image-thumbnails">
-                {images.map((image, index) => (
+                {productImages.map((image, index) => (
                   <button
                     key={index}
-                    className={`thumbnail ${
-                      activeImage === index ? "active" : ""
-                    }`}
+                    className={`thumbnail ${activeImage === index ? "active" : ""}`}
                     onClick={() => setActiveImage(index)}
                   >
                     <img
                       src={image}
-                      alt={`${product.name} ${index + 1}`}
+                      alt={`${productName} ${index + 1}`}
                       onError={(e) => {
                         e.target.src = "/images/placeholder-tshirt.jpg";
                       }}
@@ -152,33 +167,29 @@ const ProductDetail = () => {
           {/* Product Info */}
           <div className="product-info">
             <div className="product-header">
-              <h1 className="product-title">{product.name}</h1>
-              <div className="product-price">${product.price}</div>
+              <h1 className="product-title">{productName}</h1>
+              <div className="product-price">${product.price?.toFixed(2) || "0.00"}</div>
             </div>
 
             <div className="product-meta">
-              {product.brand && (
-                <span className="brand">Brand: {product.brand}</span>
+              {productBrand && (
+                <span className="brand">Brand: {productBrand}</span>
               )}
-              <span className="category">Category: {product.category}</span>
+              <span className="category">Category: {product.category || "Uncategorized"}</span>
               {product.style_tag && (
                 <span className="style-tag">Style: {product.style_tag}</span>
               )}
               {product.artist && (
                 <span className="artist">Artist: {product.artist}</span>
               )}
-              <span
-                className={`stock ${
-                  product.inStock ? "in-stock" : "out-of-stock"
-                }`}
-              >
-                {product.inStock
-                  ? `In Stock (${product.stock_quantity} available)`
+              <span className={`stock ${inStock ? "in-stock" : "out-of-stock"}`}>
+                {inStock
+                  ? `In Stock (${stockQuantity} available)`
                   : "Out of Stock"}
               </span>
             </div>
 
-            <p className="product-description">{product.fullDescription}</p>
+            <p className="product-description">{productDescription}</p>
 
             {product.material && (
               <div className="material-info">
@@ -187,16 +198,14 @@ const ProductDetail = () => {
             )}
 
             {/* Size Selection */}
-            {sizes.length > 0 && (
+            {productSizes.length > 0 && (
               <div className="selection-group">
                 <label className="selection-label">Size:</label>
                 <div className="size-options">
-                  {sizes.map((size) => (
+                  {productSizes.map((size) => (
                     <button
                       key={size}
-                      className={`size-option ${
-                        selectedSize === size ? "selected" : ""
-                      }`}
+                      className={`size-option ${selectedSize === size ? "selected" : ""}`}
                       onClick={() => setSelectedSize(size)}
                     >
                       {size}
@@ -207,16 +216,14 @@ const ProductDetail = () => {
             )}
 
             {/* Color Selection */}
-            {colors.length > 0 && (
+            {productColors.length > 0 && (
               <div className="selection-group">
                 <label className="selection-label">Color:</label>
                 <div className="color-options">
-                  {colors.map((color) => (
+                  {productColors.map((color) => (
                     <button
                       key={color}
-                      className={`color-option ${
-                        selectedColor === color ? "selected" : ""
-                      }`}
+                      className={`color-option ${selectedColor === color ? "selected" : ""}`}
                       onClick={() => setSelectedColor(color)}
                       title={color}
                     >
@@ -224,10 +231,7 @@ const ProductDetail = () => {
                         className="color-swatch"
                         style={{
                           backgroundColor: color.toLowerCase(),
-                          border:
-                            color.toLowerCase() === "white"
-                              ? "1px solid #ddd"
-                              : "none",
+                          border: color.toLowerCase() === "white" ? "1px solid #ddd" : "none",
                         }}
                       ></span>
                       <span className="color-name">{color}</span>
@@ -252,14 +256,14 @@ const ProductDetail = () => {
                 <button
                   className="quantity-btn"
                   onClick={increaseQuantity}
-                  disabled={quantity >= product.stock_quantity}
+                  disabled={quantity >= stockQuantity}
                 >
                   +
                 </button>
               </div>
-              {product.stock_quantity > 0 && (
+              {stockQuantity > 0 && (
                 <div className="stock-info">
-                  Only {product.stock_quantity} left in stock
+                  Only {stockQuantity} left in stock
                 </div>
               )}
             </div>
@@ -269,14 +273,14 @@ const ProductDetail = () => {
               <button
                 className="btn btn-primary btn-large"
                 onClick={handleAddToCart}
-                disabled={!product.inStock}
+                disabled={!inStock}
               >
-                {product.inStock ? "Add to Cart" : "Out of Stock"}
+                {inStock ? "Add to Cart" : "Out of Stock"}
               </button>
               <button
                 className="btn btn-secondary btn-large"
                 onClick={handleBuyNow}
-                disabled={!product.inStock}
+                disabled={!inStock}
               >
                 Buy Now
               </button>

@@ -11,7 +11,7 @@ const ProductCard = ({ product, onClick, showBrand = true }) => {
   // Safely destructure with defaults
   const {
     id,
-    name = '', // Changed from title to name
+    title = '', // Changed from title to name
     image_url = '', // Might be image_url or imageUrl
     price = 0,
     category = '',
@@ -32,7 +32,7 @@ const ProductCard = ({ product, onClick, showBrand = true }) => {
   const imageUrl = image_url || product.imageUrl || product.image_url || '';
   
   // Safely get title/name
-  const productTitle = name || product.title || product.name || 'Untitled Product';
+  const productTitle = title || product.title || product.name || 'Untitled Product';
 
   const handleImageError = () => {
     setImageError(true);
@@ -151,7 +151,7 @@ const ProductCard = ({ product, onClick, showBrand = true }) => {
         <div className="product-footer">
           <div className="product-actions">
             <Link 
-              to={`/products/${id}`} // Changed from /products/detail/${id}
+              to={`/products/detail/${id}`} // Changed from /products/detail/${id}
               onClick={(e) => e.stopPropagation()}
               className="view-details-link"
             >
