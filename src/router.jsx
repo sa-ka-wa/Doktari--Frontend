@@ -1,3 +1,4 @@
+// src/router.jsx
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -12,6 +13,8 @@ import ProductDetail from "./pages/Products/Detail";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import Profile from "./pages/Auth/Profile";
+import Cart from "./pages/Cart/Cart";
+import Checkout from "./pages/Orders/Checkout/Checkout";
 
 // Admin
 import AdminDashboard from "./pages/Admin/Dashboard/AdminDashboard";
@@ -33,6 +36,8 @@ const AppRouter = () => {
         <Route path="/" element={<Home />} />
         <Route path="/products/catalog" element={<ProductCatalog />} />
         <Route path="/products/detail/:id" element={<ProductDetail />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<Profile />} />
@@ -41,7 +46,7 @@ const AppRouter = () => {
         <Route path="/brands" element={<BrandDirectory />} />
         <Route path="/brands/:brandId" element={<BrandDetailPage />} />
 
-        {/* Admin routes */}
+        {/* Admin routes - These should be separate, not nested incorrectly */}
         <Route
           path="/admin"
           element={
@@ -49,15 +54,61 @@ const AppRouter = () => {
               <AdminDashboard />
             </ProtectedRoute>
           }
-        >
-          <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="brands" element={<BrandManagement />} />
-          <Route path="brands/create" element={<BrandManagement />} />
-          <Route path="brands/:brandId/edit" element={<BrandManagement />} />
-          <Route path="products" element={<ProductManagement />} />
-          <Route path="users" element={<UserManagement />} />
-        </Route>
+        />
+        
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/admin/brands"
+          element={
+            <ProtectedRoute role="admin">
+              <BrandManagement />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/admin/brands/create"
+          element={
+            <ProtectedRoute role="admin">
+              <BrandManagement />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/admin/brands/:brandId/edit"
+          element={
+            <ProtectedRoute role="admin">
+              <BrandManagement />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/admin/products"
+          element={
+            <ProtectedRoute role="admin">
+              <ProductManagement />
+            </ProtectedRoute>
+          }
+        />
+        
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute role="admin">
+              <UserManagement />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />

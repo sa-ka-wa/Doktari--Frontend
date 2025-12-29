@@ -1,21 +1,24 @@
 // src/components/products/ProductCard/ProductCard.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useCart } from '../../../context/CartContext'; 
 import Card from '../../common/Card';
 import Button from '../../common/Button';
 import './ProductCard.css';
 
 const ProductCard = ({ product, onClick, showBrand = true }) => {
   const [imageError, setImageError] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const { addToCart, isInCart } = useCart();
 
   // Safely destructure with defaults
   const {
     id,
-    title = '', // Changed from title to name
-    image_url = '', // Might be image_url or imageUrl
+    title = '',
+    image_url = '',
     price = 0,
     category = '',
-    brand, // This might be an object with name property
+    brand,
     brand_id,
     stock_quantity = 0,
     has_3d_model = false,
@@ -34,16 +37,43 @@ const ProductCard = ({ product, onClick, showBrand = true }) => {
   // Safely get title/name
   const productTitle = title || product.title || product.name || 'Untitled Product';
 
+  // ✅ ADD THIS: Check if product is already in cart
+  const alreadyInCart = isInCart(id, 'M', 'Default');
+
   const handleImageError = () => {
     setImageError(true);
   };
 
   const handleCardClick = (e) => {
-    // Don't trigger card click if clicking on buttons or links
     if (!e.target.closest('button') && !e.target.closest('a')) {
       if (onClick) {
         onClick(product);
       }
+    }
+  };
+
+  const handleAddToCart = async (e) => {
+    e.stopPropagation();
+    
+    if (stock_quantity <= 0) {
+      alert('This product is out of stock');
+      return;
+    }
+
+    setIsAdding(true);
+    
+    try {
+      const result = addToCart(product, 1, 'M', 'Default');
+      
+      if (result.success) {
+        console.log('Added to cart:', result.item);
+        // You can add a toast notification here
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      alert('Failed to add to cart');
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -55,7 +85,6 @@ const ProductCard = ({ product, onClick, showBrand = true }) => {
 
   const stockStatus = getStockStatus();
 
-  // Format price safely
   const formattedPrice = typeof price === 'number' 
     ? `$${price.toFixed(2)}` 
     : `$${parseFloat(price || 0).toFixed(2)}`;
@@ -151,7 +180,7 @@ const ProductCard = ({ product, onClick, showBrand = true }) => {
         <div className="product-footer">
           <div className="product-actions">
             <Link 
-              to={`/products/detail/${id}`} // Changed from /products/detail/${id}
+              to={`/products/detail/${id}`}
               onClick={(e) => e.stopPropagation()}
               className="view-details-link"
             >
@@ -160,18 +189,25 @@ const ProductCard = ({ product, onClick, showBrand = true }) => {
               </Button>
             </Link>
             
-            {stock_quantity > 0 && (
+            {stock_quantity > 0 ? (
               <Button 
-                variant="primary" 
+                variant={alreadyInCart ? "success" : "primary"}
                 size="sm" 
                 fullWidth
-                onClick={(e) => {
-                  e.stopPropagation();
-                  // Add to cart logic here
-                  console.log('Add to cart:', product);
-                }}
+                onClick={handleAddToCart}
+                disabled={isAdding || alreadyInCart}
+                loading={isAdding}
               >
-                Add to Cart
+                {alreadyInCart ? '✓ Added' : 'Add to Cart'}
+              </Button>
+            ) : (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                fullWidth
+                disabled
+              >
+                Out of Stock
               </Button>
             )}
           </div>

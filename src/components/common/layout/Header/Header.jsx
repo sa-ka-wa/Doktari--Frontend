@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import AuthContext from "../../../../context/AuthContext";
+import CartIcon from '../../CartIcon/CartIcon';
 
 import "./Header.css";
 
@@ -102,6 +103,10 @@ const Header = ({ brand = "Prolific" }) => {
             </Link>
           </>
         )}
+         <div className="header-actions">
+          <CartIcon />
+          {/* Add other icons like user profile */}
+        </div>
       </nav>
     </header>
   );
