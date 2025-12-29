@@ -2,8 +2,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import "./BrandCard.css";
-import { Card } from "../../common/Card";
-import { Button } from "../../common/Button";
+import  Card  from "../../common/Card";
+import  Button  from "../../common/Button";
 
 const BrandCard = ({ brand, showActions = false, onEdit, onDelete }) => {
   const {

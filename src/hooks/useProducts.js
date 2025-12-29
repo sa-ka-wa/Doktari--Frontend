@@ -1,253 +1,276 @@
-// import { useState, useEffect } from "react";
+// src/hooks/useProducts.js
+import { useState, useEffect, useCallback } from 'react';
+import { productService } from '../services/api/productService';
 
-// export const useProducts = () => {
-//   const [products, setProducts] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
+export const useProducts = (options = {}) => {
+  const {
+    autoFetch = true,
+    brandId = null,
+    category = null,
+    limit = null,
+    sort = 'newest',
+    search = ''
+  } = options;
 
-//   useEffect(() => {
-//     // Mock data - replace with actual API call
-//     const mockProducts = [
-//       {
-//         id: 1,
-//         name: "Classic Cotton T-Shirt",
-//         description: "Comfortable cotton t-shirt for everyday wear",
-//         fullDescription:
-//           "Our classic cotton t-shirt is made from 100% premium cotton for ultimate comfort. Perfect for everyday wear, this t-shirt features a modern fit and durable construction that maintains its shape wash after wash.",
-//         price: 29.99,
-//         image: "/images/tshirt1.jpg",
-//         images: [
-//           "/images/tshirt1.jpg",
-//           "/images/tshirt1-alt1.jpg",
-//           "/images/tshirt1-alt2.jpg",
-//         ],
-//         category: "casual",
-//         brand: "BasicWear",
-//         sizes: ["S", "M", "L", "XL", "XXL"],
-//         colors: ["Black", "White", "Gray", "Navy"],
-//         inStock: true,
-//         createdAt: "2024-01-15",
-//       },
-//       {
-//         id: 2,
-//         name: "Premium Fit T-Shirt",
-//         description: "Slim fit premium t-shirt with exceptional comfort",
-//         fullDescription:
-//           "Experience luxury with our premium fit t-shirt. Crafted from high-quality combed cotton, this slim-fit shirt offers exceptional comfort and style. Perfect for both casual and semi-formal occasions.",
-//         price: 39.99,
-//         image: "/images/tshirt2.jpg",
-//         images: ["/images/tshirt2.jpg", "/images/tshirt2-alt1.jpg"],
-//         category: "premium",
-//         brand: "StyleCo",
-//         sizes: ["XS", "S", "M", "L", "XL"],
-//         colors: ["Black", "White", "Charcoal", "Burgundy"],
-//         inStock: true,
-//         createdAt: "2024-01-20",
-//       },
-//       {
-//         id: 3,
-//         name: "Sports Performance Tee",
-//         description: "Moisture-wicking t-shirt for active lifestyles",
-//         fullDescription:
-//           "Stay dry and comfortable during your workouts with our sports performance tee. Made from advanced moisture-wicking fabric that keeps you cool and dry. Ideal for running, gym sessions, and sports activities.",
-//         price: 34.99,
-//         image: "/images/tshirt3.jpg",
-//         images: ["/images/tshirt3.jpg"],
-//         category: "sports",
-//         brand: "SportTech",
-//         sizes: ["S", "M", "L", "XL", "XXL"],
-//         colors: ["Black", "Royal Blue", "Red", "Green"],
-//         inStock: false,
-//         createdAt: "2024-01-25",
-//       },
-//     ];
-
-//     setTimeout(() => {
-//       setProducts(mockProducts);
-//       setLoading(false);
-//     }, 1000);
-//   }, []);
-
-//   return { products, loading, error };
-// };
-import { useState, useEffect, useCallback } from "react";
-import { productService } from "../services/api/productService";
-
-export const useProducts = (initialFilters = {}) => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(autoFetch);
   const [error, setError] = useState(null);
-  const [filters, setFilters] = useState(initialFilters);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    totalPages: 1,
+    totalCount: 0
+  });
 
-  const fetchProducts = useCallback(async (filters = {}) => {
+  const fetchProducts = useCallback(async (params = {}) => {
     try {
       setLoading(true);
       setError(null);
-
-      const productsData = await productService.getProducts(filters);
-
-      // Transform backend data to match frontend structure
-      const transformedProducts = productsData.map((product) => ({
-        id: product.id,
-        name: product.title, // Map title to name
-        title: product.title,
-        description: product.description,
-        fullDescription: product.description, // Using same description for now
-        price: product.price,
-        image: product.image_url,
-        images: [product.image_url], // Single image for now
-        category: product.category,
-        product_type: product.product_type,
-        style_tag: product.style_tag,
-        artist: product.artist,
-        sizes: product.size ? [product.size] : ["S", "M", "L", "XL"], // Handle single size or provide defaults
-        colors: product.color ? [product.color] : ["Black", "White"], // Handle single color or provide defaults
-        material: product.material,
-        brand: product.brand_name || "Unknown Brand",
-        brand_id: product.brand_id,
-        stock_quantity: product.stock_quantity,
-        inStock: product.stock_quantity > 0,
-        has_3d_model: product.has_3d_model,
-        model_3d_url: product.model_3d_url,
-        model_scale: product.model_scale,
-        model_position: product.model_position,
-        created_at: product.created_at,
-        is_active: product.is_active,
-      }));
-
-      setProducts(transformedProducts);
+      
+      const data = await productService.getProducts({
+        ...params,
+        brand_id: brandId || params.brand_id,
+        category: category || params.category,
+        limit: limit || params.limit,
+        sort: sort || params.sort,
+        search: search || params.search
+      });
+      
+      setProducts(data.products || data);
+      
+      if (data.pagination) {
+        setPagination(data.pagination);
+      }
+      
+      return data;
     } catch (err) {
-      console.error("Error fetching products:", err);
-      setError(err.response?.data?.message || "Failed to fetch products");
-      setProducts([]);
+      setError(err.message || 'Failed to fetch products');
+      console.error('Error in useProducts:', err);
+      throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [brandId, category, limit, sort, search]);
 
   useEffect(() => {
-    fetchProducts(filters);
-  }, [fetchProducts, filters]);
+    if (autoFetch) {
+      fetchProducts();
+    }
+  }, [autoFetch, fetchProducts]);
 
-  const updateFilters = useCallback((newFilters) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }));
-  }, []);
+  const createProduct = async (productData) => {
+    try {
+      const newProduct = await productService.createProduct(productData);
+      setProducts(prev => [...prev, newProduct]);
+      return newProduct;
+    } catch (err) {
+      setError(err.message || 'Failed to create product');
+      throw err;
+    }
+  };
 
-  const clearFilters = useCallback(() => {
-    setFilters({});
-  }, []);
+  const updateProduct = async (productId, productData) => {
+    try {
+      const updatedProduct = await productService.updateProduct(productId, productData);
+      setProducts(prev => prev.map(product => 
+        product.id === productId ? updatedProduct : product
+      ));
+      return updatedProduct;
+    } catch (err) {
+      setError(err.message || 'Failed to update product');
+      throw err;
+    }
+  };
 
-  const searchProducts = useCallback(
-    async (query) => {
-      if (!query.trim()) {
-        await fetchProducts(filters);
-        return;
-      }
+  const deleteProduct = async (productId) => {
+    try {
+      await productService.deleteProduct(productId);
+      setProducts(prev => prev.filter(product => product.id !== productId));
+    } catch (err) {
+      setError(err.message || 'Failed to delete product');
+      throw err;
+    }
+  };
 
-      try {
-        setLoading(true);
-        const searchResults = await productService.searchProducts(query);
+  const getProduct = async (productId) => {
+    try {
+      setLoading(true);
+      const product = await productService.getProductById(productId);
+      return product;
+    } catch (err) {
+      setError(err.message || 'Failed to fetch product');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        const transformedProducts = searchResults.map((product) => ({
-          id: product.id,
-          name: product.title,
-          title: product.title,
-          description: product.description,
-          price: product.price,
-          image: product.image_url,
-          category: product.category,
-          style_tag: product.style_tag,
-          artist: product.artist,
-          sizes: product.size ? [product.size] : ["S", "M", "L", "XL"],
-          colors: product.color ? [product.color] : ["Black", "White"],
-          brand: product.brand_name || "Unknown Brand",
-          stock_quantity: product.stock_quantity,
-          inStock: product.stock_quantity > 0,
-          has_3d_model: product.has_3d_model,
-        }));
+  const searchProducts = async (searchTerm) => {
+    return fetchProducts({ search: searchTerm });
+  };
 
-        setProducts(transformedProducts);
-      } catch (err) {
-        console.error("Error searching products:", err);
-        setError(err.response?.data?.message || "Failed to search products");
-      } finally {
-        setLoading(false);
-      }
-    },
-    [filters, fetchProducts]
-  );
+  const changePage = async (page) => {
+    return fetchProducts({ page });
+  };
+
+  const getProductsByBrand = async (brandId, params = {}) => {
+    try {
+      setLoading(true);
+      const data = await productService.getProductsByBrand(brandId, params);
+      return data;
+    } catch (err) {
+      setError(err.message || 'Failed to fetch brand products');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getFeaturedProducts = async (limit = 8) => {
+    try {
+      setLoading(true);
+      const data = await productService.getFeaturedProducts(limit);
+      return data;
+    } catch (err) {
+      setError(err.message || 'Failed to fetch featured products');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getNewArrivals = async (limit = 8) => {
+    try {
+      setLoading(true);
+      const data = await productService.getNewArrivals(limit);
+      return data;
+    } catch (err) {
+      setError(err.message || 'Failed to fetch new arrivals');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getBestSellers = async (limit = 8) => {
+    try {
+      setLoading(true);
+      const data = await productService.getBestSellers(limit);
+      return data;
+    } catch (err) {
+      setError(err.message || 'Failed to fetch best sellers');
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return {
     products,
     loading,
     error,
-    filters,
-    updateFilters,
-    clearFilters,
+    pagination,
+    fetchProducts,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    getProduct,
     searchProducts,
-    refetch: () => fetchProducts(filters),
+    changePage,
+    getProductsByBrand,
+    getFeaturedProducts,
+    getNewArrivals,
+    getBestSellers,
+    refetch: fetchProducts
   };
 };
 
-// Hook for single product
-export const useProduct = (id) => {
+// Singular hook for single product
+export const useProduct = (productId, options = {}) => {
+  const {
+    autoFetch = true,
+    includeRelated = false
+  } = options;
+
   const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(autoFetch);
   const [error, setError] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+
+  const fetchProduct = async (id = productId) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const productData = await productService.getProductById(id);
+      setProduct(productData);
+      
+      if (includeRelated && productData) {
+        const related = await productService.getProducts({
+          category: productData.category,
+          brand_id: productData.brand_id,
+          limit: 4,
+          exclude: id
+        });
+        setRelatedProducts(related.products || related);
+      }
+      
+      return productData;
+    } catch (err) {
+      setError(err.message || 'Failed to fetch product');
+      console.error('Error in useProduct:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      if (!id) {
-        setLoading(false);
-        return;
-      }
+    if (autoFetch && productId) {
+      fetchProduct();
+    }
+  }, [productId, autoFetch]);
 
-      try {
-        setLoading(true);
-        setError(null);
+  const updateProduct = async (productData) => {
+    try {
+      const updatedProduct = await productService.updateProduct(productId, productData);
+      setProduct(updatedProduct);
+      return updatedProduct;
+    } catch (err) {
+      setError(err.message || 'Failed to update product');
+      throw err;
+    }
+  };
 
-        const productData = await productService.getProductById(id);
+  const deleteProduct = async () => {
+    try {
+      await productService.deleteProduct(productId);
+      setProduct(null);
+    } catch (err) {
+      setError(err.message || 'Failed to delete product');
+      throw err;
+    }
+  };
 
-        // Transform backend data to match frontend structure
-        const transformedProduct = {
-          id: productData.id,
-          name: productData.title,
-          title: productData.title,
-          description: productData.description,
-          fullDescription: productData.description,
-          price: productData.price,
-          image: productData.image_url,
-          images: [productData.image_url], // You might want to extend this for multiple images
-          category: productData.category,
-          product_type: productData.product_type,
-          style_tag: productData.style_tag,
-          artist: productData.artist,
-          sizes: productData.size ? [productData.size] : ["S", "M", "L", "XL"],
-          colors: productData.color ? [productData.color] : ["Black", "White"],
-          material: productData.material,
-          brand: productData.brand_name || "Unknown Brand",
-          brand_id: productData.brand_id,
-          stock_quantity: productData.stock_quantity,
-          inStock: productData.stock_quantity > 0,
-          has_3d_model: productData.has_3d_model,
-          model_3d_url: productData.model_3d_url,
-          model_scale: productData.model_scale,
-          model_position: productData.model_position,
-          created_at: productData.created_at,
-          is_active: productData.is_active,
-        };
+  const updateStock = async (quantity) => {
+    try {
+      const updatedProduct = await productService.updateStock(productId, quantity);
+      setProduct(updatedProduct);
+      return updatedProduct;
+    } catch (err) {
+      setError(err.message || 'Failed to update stock');
+      throw err;
+    }
+  };
 
-        setProduct(transformedProduct);
-      } catch (err) {
-        console.error("Error fetching product:", err);
-        setError(err.response?.data?.message || "Failed to fetch product");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProduct();
-  }, [id]);
-
-  return { product, loading, error };
+  return {
+    product,
+    loading,
+    error,
+    relatedProducts,
+    fetchProduct,
+    updateProduct,
+    deleteProduct,
+    updateStock,
+    refetch: fetchProduct
+  };
 };

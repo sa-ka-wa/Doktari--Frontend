@@ -1,7 +1,7 @@
 // src/pages/Brands/Directory/BrandDirectory.jsx
 import React from "react";
 import BrandList from "../../../components/brands/BrandList";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "react-helmet";
 import "./BrandDirectory.css";
 
 const BrandDirectory = () => {

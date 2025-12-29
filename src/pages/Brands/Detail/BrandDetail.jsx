@@ -2,7 +2,7 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import BrandDetail from "../../../components/brands/BrandDetail";
-import { Helmet } from "react-helmet-async";
+import { Helmet } from "react-helmet";
 import "./BrandDetail.css";
 
 const BrandDetailPage = () => {

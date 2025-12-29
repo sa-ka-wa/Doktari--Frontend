@@ -1,10 +1,10 @@
 // src/components/brands/BrandDetail/BrandDetail.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { brandService } from "../../../services/api/brandService";
-import { LoadingSpinner } from "../../common/LoadingSpinner";
-import { Button } from "../../common/Button";
-import { Modal } from "../../common/Modal";
+import  brandService from "../../../services/api/brandService";
+import  LoadingSpinner  from "../../common/LoadingSpinner";
+import  Button  from "../../common/Button";
+import  Modal  from "../../common/Modal";
 import ProductList from "../../products/ProductList";
 import "./BrandDetail.css";
 
