@@ -29,12 +29,6 @@ const Header = ({ brand = "Prolific" }) => {
       links.push({ to: "/staff/dashboard", label: "Staff Dashboard" });
     }
 
-    // For testing purposes, you can add a temporary link
-    // Remove this in production
-    if (process.env.NODE_ENV === "development") {
-      links.push({ to: "/staff/dashboard", label: "Staff Dashboard (Dev)" });
-    }
-
     return links;
   };
 
