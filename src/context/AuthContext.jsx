@@ -67,13 +67,90 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = (updatedData) => {
+    setUser((prev) => ({ ...prev, ...updatedData }));
+  };
+
+  // =================== NEW FUNCTIONS ADDED HERE ===================
+
+  // Role-based permission checks
+  const hasRole = (roles) => {
+    if (!user || !user.role) return false;
+    if (Array.isArray(roles)) {
+      return roles.includes(user.role);
+    }
+    return user.role === roles;
+  };
+
+  const hasPermission = (permission) => {
+    if (!user || !user.role) return false;
+
+    // Define role permissions
+    const rolePermissions = {
+      super_admin: ["*"],
+      admin: [
+        "manage_users",
+        "manage_brands",
+        "manage_products",
+        "view_all_orders",
+      ],
+      brand_admin: [
+        "manage_brand_users",
+        "manage_brand_products",
+        "view_brand_orders",
+        "update_order_status",
+      ],
+      brand_staff: [
+        "view_brand_orders",
+        "update_order_tracking",
+        "view_brand_products",
+      ],
+      customer: ["view_own_orders", "create_orders", "cancel_own_orders"],
+    };
+
+    const userPermissions = rolePermissions[user.role] || [];
+    return (
+      userPermissions.includes("*") || userPermissions.includes(permission)
+    );
+  };
+
+  // Check if user can access brand-specific data
+  const canAccessBrand = (brandId) => {
+    if (!user) return false;
+    if (hasRole(["super_admin", "admin"])) return true;
+    if (user.brand_id && user.brand_id.toString() === brandId?.toString())
+      return true;
+    return false;
+  };
+
+  // Get user's display role
+  const getRoleDisplay = () => {
+    if (!user || !user.role) return "";
+    const roleMap = {
+      super_admin: "Super Admin",
+      admin: "Admin",
+      brand_admin: "Brand Admin",
+      brand_staff: "Staff",
+      customer: "Customer",
+    };
+    return roleMap[user.role] || user.role;
+  };
+
+  // =================== END OF NEW FUNCTIONS ===================
+
   const value = {
     user,
     login,
     register,
     logout,
+    updateUser,
     loading,
     isAuthenticated: !!user,
+    // =================== EXPORT NEW FUNCTIONS ===================
+    hasRole,
+    hasPermission,
+    canAccessBrand,
+    getRoleDisplay,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

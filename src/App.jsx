@@ -1,21 +1,27 @@
 import React from "react";
 import AppRouter from "./router";
+
 import { AuthProvider } from "./context/AuthContext";
+import { UserProvider } from "./context/UserContext";
 import { BrandProvider } from "./context/BrandContext";
-import { CartProvider } from './context/CartContext';
+import { CartProvider } from "./context/CartContext";
+import { OrderProvider } from "./context/OrderContext";
+
 import "./App.css";
 
 function App() {
   return (
-    <BrandProvider>
-      <AuthProvider>
-         <CartProvider>
-        <div className="App">
-          <AppRouter />
-        </div>
-         </CartProvider>
-      </AuthProvider>
-    </BrandProvider>
+    <AuthProvider>
+      <BrandProvider>
+        <UserProvider>
+          <CartProvider>
+            <OrderProvider>
+              <AppRouter />
+            </OrderProvider>
+          </CartProvider>
+        </UserProvider>
+      </BrandProvider>
+    </AuthProvider>
   );
 }
 

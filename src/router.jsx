@@ -21,6 +21,7 @@ import AdminDashboard from "./pages/Admin/Dashboard/AdminDashboard";
 import BrandManagement from "./pages/Admin/BrandManager/BrandManagement";
 import ProductManagement from "./pages/Admin/Products/ProductManagement";
 import UserManagement from "./pages/Admin/Users/UserManagement";
+import StaffDashboard from "./pages/Admin/Dashboard/StaffDashboard";
 
 // Brand pages (public)
 import BrandDirectory from "./pages/Brands/Directory/BrandDirectory";
@@ -55,7 +56,7 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path="/admin/dashboard"
           element={
@@ -64,7 +65,7 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path="/admin/brands"
           element={
@@ -73,7 +74,7 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path="/admin/brands/create"
           element={
@@ -82,7 +83,7 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path="/admin/brands/:brandId/edit"
           element={
@@ -91,7 +92,7 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path="/admin/products"
           element={
@@ -100,12 +101,42 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
-        
+
         <Route
           path="/admin/users"
           element={
             <ProtectedRoute role="admin">
               <UserManagement />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/dashboard"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "brand_admin",
+                "brand_staff",
+                "admin",
+                "super_admin",
+              ]}
+            >
+              <StaffDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/orders"
+          element={
+            <ProtectedRoute
+              allowedRoles={[
+                "brand_admin",
+                "brand_staff",
+                "admin",
+                "super_admin",
+              ]}
+            >
+              <StaffDashboard />
             </ProtectedRoute>
           }
         />
