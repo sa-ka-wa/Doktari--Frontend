@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Modal from "../../../components/common/Modal/Modal";
+import Modal from "../../../../components/common/Modal/Modal";
 import "./OrderModals.css";
 
 const TrackingModal = ({ isOpen, onClose, order, onSave }) => {

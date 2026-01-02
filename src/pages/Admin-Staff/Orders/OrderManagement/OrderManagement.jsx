@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useOrders } from "../../../context/OrderContext";
-import { useAuth } from "../../../context/AuthContext";
-import SearchBar from "../../../components/common/SearchBar/SearchBar";
-import Card from "../../../components/common/Card/Card";
-import LoadingSpinner from "../../../components/common/LoadingSpinner/LoadingSpinner";
-import OrderDetailModal from "./OrderDetailModal";
-import StatusUpdateModal from "./StatusUpdateModal";
-import TrackingModal from "./TrackingModal";
+import { useOrders } from "../../../../context/OrderContext";
+import { useAuth } from "../../../../context/AuthContext";
+import SearchBar from "../../../../components/common/SearchBar/SearchBar";
+import Card from "../../../../components/common/Card/Card";
+import LoadingSpinner from "../../../../components/common/LoadingSpinner/LoadingSpinner";
+import OrderDetailModal from "../OrderDetailModal/OrderDetailModal";
+import StatusUpdateModal from "../OrderDetailModal/StatusUpdateModal";
+import TrackingModal from "../OrderDetailModal/TrackingModal";
 import "./OrderManagement.css";
 
 const OrderManagement = () => {

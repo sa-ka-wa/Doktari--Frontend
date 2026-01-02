@@ -21,7 +21,12 @@ import AdminDashboard from "./pages/Admin/Dashboard/AdminDashboard";
 import BrandManagement from "./pages/Admin/BrandManager/BrandManagement";
 import ProductManagement from "./pages/Admin/Products/ProductManagement";
 import UserManagement from "./pages/Admin/Users/UserManagement";
-import StaffDashboard from "./pages/Admin/Dashboard/StaffDashboard";
+import StaffDashboard from "./pages/Admin-Staff/Dashboard/StaffDashboard/StaffDashboard";
+
+// Staff components
+import StaffOverview from "./pages/Admin-Staff/Dashboard/StaffOverview/StaffOverview";
+import OrderManagement from "./pages/Admin-Staff/Orders/OrderManagement/OrderManagement";
+import OrderDetail from "./pages/Admin-Staff/Orders/OrderDetail/OrderDetail"; // You'll need to create this
 
 // Brand pages (public)
 import BrandDirectory from "./pages/Brands/Directory/BrandDirectory";
@@ -47,7 +52,7 @@ const AppRouter = () => {
         <Route path="/brands" element={<BrandDirectory />} />
         <Route path="/brands/:brandId" element={<BrandDetailPage />} />
 
-        {/* Admin routes - These should be separate, not nested incorrectly */}
+        {/* Admin routes */}
         <Route
           path="/admin"
           element={
@@ -110,8 +115,10 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         />
+
+        {/* Staff routes - nested structure */}
         <Route
-          path="/staff/dashboard"
+          path="/staff"
           element={
             <ProtectedRoute
               allowedRoles={[
@@ -124,22 +131,14 @@ const AppRouter = () => {
               <StaffDashboard />
             </ProtectedRoute>
           }
-        />
-        <Route
-          path="/staff/orders"
-          element={
-            <ProtectedRoute
-              allowedRoles={[
-                "brand_admin",
-                "brand_staff",
-                "admin",
-                "super_admin",
-              ]}
-            >
-              <StaffDashboard />
-            </ProtectedRoute>
-          }
-        />
+        >
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<StaffOverview />} />
+          <Route path="orders" element={<OrderManagement />} />
+          <Route path="orders/:id" element={<OrderDetail />} />
+          <Route path="products" element={<ProductManagement />} />
+          {/* Add other staff routes as needed */}
+        </Route>
 
         {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />

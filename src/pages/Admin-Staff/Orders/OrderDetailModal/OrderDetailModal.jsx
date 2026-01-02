@@ -1,6 +1,6 @@
 import React from "react";
-import Modal from "../../../components/common/Modal/Modal";
-import Card from "../../../components/common/Card/Card";
+import Modal from "../../../../components/common/Modal/Modal";
+import Card from "../../../../components/common/Card/Card";
 import "./OrderModals.css";
 
 const OrderDetailModal = ({ isOpen, onClose, order }) => {

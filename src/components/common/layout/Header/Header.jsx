@@ -14,16 +14,25 @@ const Header = ({ brand = "Prolific" }) => {
   const isProlific = brandName.toLowerCase() === "prolific";
   const isDoktari = brandName.toLowerCase() === "doktari";
 
-  // Role-based navigation
+  // Role-based navigation - UPDATED to include staff dashboard
   const getAdminLinks = () => {
     const links = [];
 
+    // Super Admin & Admin - full admin access
     if (hasRole(["super_admin", "admin"])) {
-      links.push({ to: "/admin", label: "Admin Dashboard" });
+      links.push({ to: "/admin/dashboard", label: "Admin Dashboard" });
+      links.push({ to: "/staff/dashboard", label: "Staff Dashboard" });
     }
 
+    // Brand Admin & Brand Staff - staff dashboard access
     if (hasRole(["brand_admin", "brand_staff"])) {
-      links.push({ to: "/brand-admin", label: "Brand Dashboard" });
+      links.push({ to: "/staff/dashboard", label: "Staff Dashboard" });
+    }
+
+    // For testing purposes, you can add a temporary link
+    // Remove this in production
+    if (process.env.NODE_ENV === "development") {
+      links.push({ to: "/staff/dashboard", label: "Staff Dashboard (Dev)" });
     }
 
     return links;
@@ -93,9 +102,15 @@ const Header = ({ brand = "Prolific" }) => {
             </>
           )}
 
-          {/* Role-Based Admin Links */}
+          {/* Role-Based Admin Links - Now includes Staff Dashboard */}
           {getAdminLinks().map((link) => (
-            <Link key={link.to} to={link.to} className="admin-link">
+            <Link
+              key={link.to}
+              to={link.to}
+              className={`admin-link ${
+                link.label.includes("Staff") ? "staff-link" : ""
+              }`}
+            >
               {link.label}
             </Link>
           ))}
@@ -136,6 +151,22 @@ const Header = ({ brand = "Prolific" }) => {
                   <Link to="/orders" onClick={() => setDropdownOpen(false)}>
                     My Orders
                   </Link>
+
+                  {/* Add Staff Dashboard to dropdown menu for staff roles */}
+                  {hasRole([
+                    "brand_admin",
+                    "brand_staff",
+                    "admin",
+                    "super_admin",
+                  ]) && (
+                    <Link
+                      to="/staff/dashboard"
+                      onClick={() => setDropdownOpen(false)}
+                    >
+                      Staff Dashboard
+                    </Link>
+                  )}
+
                   {hasRole(["customer"]) && (
                     <Link to="/cart" onClick={() => setDropdownOpen(false)}>
                       Shopping Cart
@@ -223,7 +254,9 @@ const Header = ({ brand = "Prolific" }) => {
             <Link
               key={link.to}
               to={link.to}
-              className="admin-link"
+              className={`admin-link ${
+                link.label.includes("Staff") ? "staff-link" : ""
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               {link.label}
@@ -257,6 +290,22 @@ const Header = ({ brand = "Prolific" }) => {
               <Link to="/orders" onClick={() => setMobileMenuOpen(false)}>
                 My Orders
               </Link>
+
+              {/* Add Staff Dashboard to mobile menu */}
+              {hasRole([
+                "brand_admin",
+                "brand_staff",
+                "admin",
+                "super_admin",
+              ]) && (
+                <Link
+                  to="/staff/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Staff Dashboard
+                </Link>
+              )}
+
               <Link to="/cart" onClick={() => setMobileMenuOpen(false)}>
                 Shopping Cart
               </Link>

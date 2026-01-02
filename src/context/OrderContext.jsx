@@ -2,9 +2,15 @@ import React, { createContext, useState, useContext, useCallback } from "react";
 import orderService from "../services/api/orderService";
 import { useAuth } from "./AuthContext";
 
-const OrderContext = createContext({});
+const OrderContext = createContext();
 
-export const useOrders = () => useContext(OrderContext);
+export const useOrders = () => {
+  const context = useContext(OrderContext);
+  if (!context) {
+    throw new Error("useOrders must be used within an OrderProvider");
+  }
+  return context;
+};
 
 export const OrderProvider = ({ children }) => {
   const [orders, setOrders] = useState([]);
@@ -14,7 +20,17 @@ export const OrderProvider = ({ children }) => {
   const [stats, setStats] = useState(null);
   const { user } = useAuth();
 
-  // Fetch orders with role-based filtering
+  // Clear error
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
+  // Clear current order
+  const clearCurrentOrder = useCallback(() => {
+    setCurrentOrder(null);
+  }, []);
+
+  // Fetch orders with filters
   const fetchOrders = useCallback(async (params = {}) => {
     setLoading(true);
     setError(null);
@@ -23,15 +39,50 @@ export const OrderProvider = ({ children }) => {
       setOrders(data.orders || []);
       return data;
     } catch (err) {
-      setError(err.response?.data?.error || "Failed to fetch orders");
+      const errorMsg = err.response?.data?.error || "Failed to fetch orders";
+      setError(errorMsg);
       console.error("Error fetching orders:", err);
-      throw err;
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Fetch specific order
+  // Fetch order statistics
+  const fetchOrderStats = useCallback(async (params = {}) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await orderService.getOrderStats(params);
+      setStats(data);
+      return data;
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.error || "Failed to fetch order stats";
+      setError(errorMsg);
+      console.error("Error fetching order stats:", err);
+
+      // Return default stats on error
+      const defaultStats = {
+        total_orders: 0,
+        total_revenue: 0,
+        average_order_value: 0,
+        status_counts: {
+          pending: 0,
+          processing: 0,
+          shipped: 0,
+          delivered: 0,
+          cancelled: 0,
+        },
+      };
+      setStats(defaultStats);
+      return defaultStats;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch single order
   const fetchOrder = useCallback(async (orderId) => {
     setLoading(true);
     setError(null);
@@ -40,9 +91,10 @@ export const OrderProvider = ({ children }) => {
       setCurrentOrder(data);
       return data;
     } catch (err) {
-      setError(err.response?.data?.error || "Failed to fetch order");
+      const errorMsg = err.response?.data?.error || "Failed to fetch order";
+      setError(errorMsg);
       console.error("Error fetching order:", err);
-      throw err;
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -54,16 +106,14 @@ export const OrderProvider = ({ children }) => {
     setError(null);
     try {
       const data = await orderService.createOrder(orderData);
-
-      // Add to orders list
       setOrders((prev) => [data.order, ...prev]);
       setCurrentOrder(data.order);
-
       return data;
     } catch (err) {
-      setError(err.response?.data?.error || "Failed to create order");
+      const errorMsg = err.response?.data?.error || "Failed to create order";
+      setError(errorMsg);
       console.error("Error creating order:", err);
-      throw err;
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -81,21 +131,22 @@ export const OrderProvider = ({ children }) => {
           reason
         );
 
-        // Update in orders list
+        // Update in local state
         setOrders((prev) =>
           prev.map((order) => (order.id === orderId ? data.order : order))
         );
 
-        // Update current order if it's the one being updated
         if (currentOrder?.id === orderId) {
           setCurrentOrder(data.order);
         }
 
         return data;
       } catch (err) {
-        setError(err.response?.data?.error || "Failed to update order status");
+        const errorMsg =
+          err.response?.data?.error || "Failed to update order status";
+        setError(errorMsg);
         console.error("Error updating order status:", err);
-        throw err;
+        throw new Error(errorMsg);
       } finally {
         setLoading(false);
       }
@@ -111,21 +162,21 @@ export const OrderProvider = ({ children }) => {
       try {
         const data = await orderService.cancelOrder(orderId, reason);
 
-        // Update in orders list
+        // Update in local state
         setOrders((prev) =>
           prev.map((order) => (order.id === orderId ? data.order : order))
         );
 
-        // Update current order if it's the one being cancelled
         if (currentOrder?.id === orderId) {
           setCurrentOrder(data.order);
         }
 
         return data;
       } catch (err) {
-        setError(err.response?.data?.error || "Failed to cancel order");
+        const errorMsg = err.response?.data?.error || "Failed to cancel order";
+        setError(errorMsg);
         console.error("Error cancelling order:", err);
-        throw err;
+        throw new Error(errorMsg);
       } finally {
         setLoading(false);
       }
@@ -141,44 +192,28 @@ export const OrderProvider = ({ children }) => {
       try {
         const data = await orderService.addTrackingInfo(orderId, trackingData);
 
-        // Update in orders list
+        // Update in local state
         setOrders((prev) =>
           prev.map((order) => (order.id === orderId ? data.order : order))
         );
 
-        // Update current order
         if (currentOrder?.id === orderId) {
           setCurrentOrder(data.order);
         }
 
         return data;
       } catch (err) {
-        setError(err.response?.data?.error || "Failed to add tracking info");
+        const errorMsg =
+          err.response?.data?.error || "Failed to add tracking info";
+        setError(errorMsg);
         console.error("Error adding tracking info:", err);
-        throw err;
+        throw new Error(errorMsg);
       } finally {
         setLoading(false);
       }
     },
     [currentOrder]
   );
-
-  // Get order statistics
-  const fetchOrderStats = useCallback(async (params = {}) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await orderService.getOrderStats(params);
-      setStats(data);
-      return data;
-    } catch (err) {
-      setError(err.response?.data?.error || "Failed to fetch order stats");
-      console.error("Error fetching order stats:", err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   // Search orders
   const searchOrders = useCallback(async (searchTerm) => {
@@ -189,52 +224,35 @@ export const OrderProvider = ({ children }) => {
       setOrders(data.orders || []);
       return data;
     } catch (err) {
-      setError(err.response?.data?.error || "Failed to search orders");
+      const errorMsg = err.response?.data?.error || "Failed to search orders";
+      setError(errorMsg);
       console.error("Error searching orders:", err);
-      throw err;
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Clear current order
-  const clearCurrentOrder = useCallback(() => {
-    setCurrentOrder(null);
-  }, []);
-
-  // Clear error
-  const clearError = useCallback(() => {
-    setError(null);
-  }, []);
-
-  // Create the value object
   const value = {
+    // State
     orders,
     currentOrder,
     loading,
     error,
     stats,
+
+    // Actions
     fetchOrders,
+    fetchOrderStats,
     fetchOrder,
     createOrder,
     updateOrderStatus,
     cancelOrder,
     addTrackingInfo,
-    fetchOrderStats,
     searchOrders,
     clearCurrentOrder,
     clearError,
   };
-
-  // Debug logging - MUST BE AFTER value is created
-  console.log("📦 OrderProvider initialized");
-  console.log("📊 fetchOrders type:", typeof fetchOrders);
-  console.log("📊 fetchOrderStats type:", typeof fetchOrderStats);
-  console.log("🔍 OrderContext keys:", Object.keys(value));
-  console.log(
-    "✅ fetchOrderStats available?",
-    typeof value.fetchOrderStats === "function"
-  );
 
   return (
     <OrderContext.Provider value={value}>{children}</OrderContext.Provider>
