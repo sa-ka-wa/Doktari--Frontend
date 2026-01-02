@@ -1,33 +1,35 @@
-import React from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useCart } from "../../context/CartContext";
-import Button from "../../components/common/Button";
-import "./Cart.css";
+
+
+// src/pages/Cart/Cart.jsx
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
+import Button from '../../components/common/Button';
+import './Cart.css';
 
 const Cart = () => {
-  const navigate = useNavigate();
-  const {
-    items,
-    totalItems,
-    totalAmount,
-    updateQuantity,
-    removeFromCart,
-    clearCart,
+  const { 
+    items, 
+    totalItems, 
+    totalAmount, 
+    updateQuantity, 
+    removeFromCart, 
+    clearCart 
   } = useCart();
 
   if (items.length === 0) {
     return (
       <div className="cart-empty">
         <div className="empty-container">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="80"
-            height="80"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1"
-            strokeLinecap="round"
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            width="80" 
+            height="80" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="1" 
+            strokeLinecap="round" 
             strokeLinejoin="round"
             className="empty-cart-icon"
           >
@@ -37,7 +39,7 @@ const Cart = () => {
           </svg>
           <h2>Your cart is empty</h2>
           <p>Looks like you haven't added any items to your cart yet.</p>
-          <Link to="/products">
+          <Link to="/products/catalog">
             <Button variant="primary" size="lg">
               Start Shopping
             </Button>
@@ -48,8 +50,9 @@ const Cart = () => {
   }
 
   const handleCheckout = () => {
-    // Use React Router navigate instead of window.location
-    navigate("/checkout");
+    // For now, just navigate to checkout page
+    // You can add validation logic here later
+    window.location.href = '/checkout';
   };
 
   return (
@@ -57,11 +60,9 @@ const Cart = () => {
       <div className="cart-container">
         <div className="cart-header">
           <h1 className="cart-title">Shopping Cart</h1>
-          <p className="cart-item-count">
-            {totalItems} item{totalItems !== 1 ? "s" : ""}
-          </p>
-          <Button
-            variant="outline"
+          <p className="cart-item-count">{totalItems} item{totalItems !== 1 ? 's' : ''}</p>
+          <Button 
+            variant="outline" 
             size="sm"
             onClick={clearCart}
             className="clear-cart-btn"
@@ -80,33 +81,31 @@ const Cart = () => {
             </div>
 
             <div className="cart-items-list">
-              {items.map((item) => (
+              {items.map(item => (
                 <div key={item.id} className="cart-item">
                   <div className="cart-item-product">
                     <div className="product-image">
-                      <img
-                        src={item.image_url}
+                      <img 
+                        src={item.image_url} 
                         alt={item.title}
                         onError={(e) => {
-                          e.target.src = "/placeholder-image.jpg";
+                          e.target.src = '/placeholder-image.jpg';
                         }}
                       />
                     </div>
-
+                    
                     <div className="product-details">
                       <h3 className="product-title">{item.title}</h3>
                       {item.brand_name && (
-                        <p className="product-brand">
-                          Brand: {item.brand_name}
-                        </p>
+                        <p className="product-brand">Brand: {item.brand_name}</p>
                       )}
-                      {item.size && item.size !== "Default" && (
+                      {item.size && item.size !== 'Default' && (
                         <p className="product-size">Size: {item.size}</p>
                       )}
-                      {item.color && item.color !== "Default" && (
+                      {item.color && item.color !== 'Default' && (
                         <p className="product-color">Color: {item.color}</p>
                       )}
-                      <button
+                      <button 
                         className="remove-item-btn"
                         onClick={() => removeFromCart(item.id)}
                       >
@@ -116,26 +115,22 @@ const Cart = () => {
                   </div>
 
                   <div className="cart-item-price">
-                    <span className="price">KSh {item.price.toFixed(2)}</span>
+                    <span className="price">${item.price.toFixed(2)}</span>
                   </div>
 
                   <div className="cart-item-quantity">
                     <div className="quantity-controls">
-                      <button
+                      <button 
                         className="quantity-btn"
-                        onClick={() =>
-                          updateQuantity(item.id, item.quantity - 1)
-                        }
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
                         disabled={item.quantity <= 1}
                       >
                         −
                       </button>
                       <span className="quantity-value">{item.quantity}</span>
-                      <button
+                      <button 
                         className="quantity-btn"
-                        onClick={() =>
-                          updateQuantity(item.id, item.quantity + 1)
-                        }
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         disabled={item.quantity >= (item.stock_quantity || 99)}
                       >
                         +
@@ -150,7 +145,7 @@ const Cart = () => {
 
                   <div className="cart-item-total">
                     <span className="total-price">
-                      KSh {(item.price * item.quantity).toFixed(2)}
+                      ${(item.price * item.quantity).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -158,8 +153,10 @@ const Cart = () => {
             </div>
 
             <div className="continue-shopping">
-              <Link to="/products">
-                <Button variant="outline">← Continue Shopping</Button>
+              <Link to="/products/catalog">
+                <Button variant="outline">
+                  ← Continue Shopping
+                </Button>
               </Link>
             </div>
           </div>
@@ -167,39 +164,35 @@ const Cart = () => {
           <div className="cart-summary">
             <div className="summary-card">
               <h2 className="summary-title">Order Summary</h2>
-
+              
               <div className="summary-row">
                 <span className="row-label">Subtotal</span>
-                <span className="row-value">KSh {totalAmount.toFixed(2)}</span>
+                <span className="row-value">${totalAmount.toFixed(2)}</span>
               </div>
-
+              
               <div className="summary-row">
                 <span className="row-label">Shipping</span>
                 <span className="row-value">Calculated at checkout</span>
               </div>
-
+              
               <div className="summary-row">
-                <span className="row-label">Tax (16% VAT)</span>
-                <span className="row-value">
-                  KSh {(totalAmount * 0.16).toFixed(2)}
-                </span>
+                <span className="row-label">Tax</span>
+                <span className="row-value">Will be calculated</span>
               </div>
-
+              
               <div className="summary-divider"></div>
-
+              
               <div className="summary-row total-row">
                 <span className="total-label">Estimated Total</span>
-                <span className="total-value">
-                  KSh {(totalAmount * 1.16).toFixed(2)}
-                </span>
+                <span className="total-value">${totalAmount.toFixed(2)}</span>
               </div>
 
               <div className="checkout-action">
-                <Button
-                  variant="primary"
+                <Button 
+                  variant="primary" 
                   size="lg"
+                  fullWidth
                   onClick={handleCheckout}
-                  className="checkout-btn"
                 >
                   Proceed to Checkout
                 </Button>
@@ -213,7 +206,6 @@ const Cart = () => {
                   <span className="payment-icon">📱</span>
                   <span className="payment-icon">💰</span>
                 </div>
-                <p className="mpesa-note">M-Pesa payments supported</p>
               </div>
             </div>
           </div>

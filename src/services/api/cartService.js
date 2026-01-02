@@ -1,203 +1,162 @@
-import apiClient from "./apiClient";
 
-const cartService = {
-  // Get current cart from server
-  getCart: async () => {
+// src/services/CartService.js
+import apiClient from './apiClient';
+
+class CartService {
+  // Get current cart
+  async getCart() {
     try {
-      const response = await apiClient.get("/cart");
-      console.log("🛒 Cart response:", response.data);
-      return response.data;
+      const response = await apiClient.get('/cart');
+      return this.transformCartData(response.data);
     } catch (error) {
-      console.error(
-        "❌ Error getting cart:",
-        error.response?.data || error.message
-      );
-
-      // If 404 or 401, return empty cart
-      if (error.response?.status === 404 || error.response?.status === 401) {
-        console.log("No cart found on server, returning empty cart");
-        return {
-          items: [],
-          total_items: 0,
-          total_amount: 0,
-        };
-      }
-
-      // If no response (network error), try to get from localStorage
-      if (!error.response) {
-        console.log("Network error, trying localStorage...");
-        const localCart = localStorage.getItem("cart");
-        if (localCart) {
-          return JSON.parse(localCart);
-        }
-        return {
-          items: [],
-          total_items: 0,
-          total_amount: 0,
-        };
-      }
-
+      console.error('Error fetching cart:', error);
       throw error;
     }
-  },
+  }
 
-  // Add item to cart on server
-  addToCart: async (itemData) => {
+  // Add item to cart
+  async addToCart(productId, quantity = 1, size = '', color = '') {
     try {
-      console.log("➕ Adding to cart:", itemData);
-      const response = await apiClient.post("/cart/add", itemData);
-      console.log("✅ Added to cart:", response.data);
-      return response.data;
+      const response = await apiClient.post('/cart/add', {
+        product_id: productId,
+        quantity,
+        size,
+        color
+      });
+      return this.transformCartData(response.data.cart || response.data);
     } catch (error) {
-      console.error(
-        "❌ Error adding to cart:",
-        error.response?.data || error.message
-      );
-
-      // If network error, save to localStorage and throw error
-      if (!error.response) {
-        console.warn("Network error, saving to localStorage for offline");
-        throw new Error("Network error. Your item was saved locally.");
-      }
-
+      console.error('Error adding to cart:', error);
       throw error;
     }
-  },
+  }
 
-  // Update cart item quantity on server
-  updateCartItem: async (itemId, data) => {
+  // Update cart item quantity
+  async updateCartItem(itemId, quantity) {
     try {
-      console.log("✏️ Updating cart item:", itemId, data);
-      const response = await apiClient.put(`/cart/item/${itemId}`, data);
-      console.log("✅ Updated cart item:", response.data);
-      return response.data;
+      const response = await apiClient.put(`/cart/item/${itemId}`, {
+        quantity
+      });
+      return this.transformCartData(response.data.cart || response.data);
     } catch (error) {
-      console.error(
-        "❌ Error updating cart item:",
-        error.response?.data || error.message
-      );
-
-      // If item not found on server, it might be a local item
-      if (error.response?.status === 404) {
-        console.warn("Item not found on server, might be local only");
-        throw new Error("Item not found on server");
-      }
-
+      console.error('Error updating cart item:', error);
       throw error;
     }
-  },
+  }
 
-  // Remove item from cart on server
-  removeFromCart: async (itemId) => {
+  // Remove item from cart
+  async removeCartItem(itemId) {
     try {
-      console.log("🗑️ Removing cart item:", itemId);
       const response = await apiClient.delete(`/cart/item/${itemId}`);
-      console.log("✅ Removed cart item:", response.data);
-      return response.data;
+      return this.transformCartData(response.data.cart || response.data);
     } catch (error) {
-      console.error(
-        "❌ Error removing cart item:",
-        error.response?.data || error.message
-      );
-
-      // If item not found on server, it might be a local item
-      if (error.response?.status === 404) {
-        console.warn("Item not found on server, might be local only");
-        throw new Error("Item not found on server");
-      }
-
+      console.error('Error removing cart item:', error);
       throw error;
     }
-  },
+  }
 
-  // Clear entire cart on server
-  clearCart: async () => {
+  // Clear entire cart
+  async clearCart() {
     try {
-      console.log("🧹 Clearing cart");
-      const response = await apiClient.delete("/cart/clear");
-      console.log("✅ Cleared cart:", response.data);
-      return response.data;
+      const response = await apiClient.delete('/cart/clear');
+      return this.transformCartData(response.data.cart || response.data);
     } catch (error) {
-      console.error(
-        "❌ Error clearing cart:",
-        error.response?.data || error.message
-      );
+      console.error('Error clearing cart:', error);
       throw error;
     }
-  },
+  }
 
-  // Merge guest cart with user cart (when user logs in)
-  mergeCarts: async () => {
+  // Merge guest cart with user cart
+  async mergeCarts() {
     try {
-      console.log("🔄 Merging carts");
-      const response = await apiClient.post("/cart/merge");
-      console.log("✅ Merged carts:", response.data);
-      return response.data;
+      const response = await apiClient.post('/cart/merge');
+      return this.transformCartData(response.data.cart || response.data);
     } catch (error) {
-      console.error(
-        "❌ Error merging carts:",
-        error.response?.data || error.message
-      );
+      console.error('Error merging carts:', error);
       throw error;
     }
-  },
+  }
 
-  // Sync local cart with server
-  syncCartWithServer: async (localItems, user) => {
+  // Transform backend data to frontend format
+  transformCartData(cart) {
+    if (!cart) {
+      return {
+        items: [],
+        totalItems: 0,
+        totalAmount: 0,
+        cartId: null,
+        session_id: null
+      };
+    }
+
+    const items = (cart.items || []).map(item => ({
+      id: item.id?.toString() || `${item.product_id}-${item.size || ''}-${item.color || ''}`,
+      item_id: item.id, // Keep original ID for API calls
+      product_id: item.product_id,
+      title: item.product?.title || item.product?.name || 'Unknown Product',
+      price: item.product?.price || item.price || 0,
+      quantity: item.quantity || 1,
+      size: item.size || '',
+      color: item.color || '',
+      image_url: item.product?.image_url || item.product?.imageUrl || '',
+      stock_quantity: item.product?.stock_quantity || item.stock_quantity || 0,
+      brand_id: item.product?.brand_id || item.brand_id,
+      brand_name: item.product?.brand_name || item.product?.brand?.name || ''
+    }));
+
+    const totalItems = cart.total_items || items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    const totalAmount = cart.total_amount || items.reduce((sum, item) => sum + ((item.price || 0) * (item.quantity || 0)), 0);
+
+    return {
+      items,
+      totalItems,
+      totalAmount,
+      cartId: cart.id || cart.cartId || null,
+      session_id: cart.session_id || null
+    };
+  }
+
+  // Sync local cart with backend
+  async syncCart(localItems) {
     try {
-      console.log("🔄 Syncing cart with server...", { localItems, user });
-
-      if (!user) {
-        console.log("No user, skipping sync");
-        return null;
-      }
-
-      // Get current cart from server
-      const serverCart = await cartService.getCart();
-      console.log("Server cart:", serverCart);
-
-      // If server cart is empty, add all local items
-      if (!serverCart.items || serverCart.items.length === 0) {
-        console.log("Server cart empty, adding all local items");
-
-        // Clear any existing items first
-        await cartService.clearCart();
-
-        // Add all local items
-        for (const item of localItems) {
-          await cartService.addToCart({
-            product_id: item.product_id,
-            quantity: item.quantity,
-            size: item.size || "Default",
-            color: item.color || "Default",
-          });
-        }
-
-        // Get updated cart
-        return await cartService.getCart();
-      }
-
-      console.log("Server has cart items, merging...");
-      // Merge strategy: Keep server items, add any missing local items
-      const serverProductIds = serverCart.items.map((item) => item.product_id);
-
-      for (const item of localItems) {
-        if (!serverProductIds.includes(item.product_id)) {
-          await cartService.addToCart({
-            product_id: item.product_id,
-            quantity: item.quantity,
-            size: item.size || "Default",
-            color: item.color || "Default",
-          });
-        }
-      }
-
-      return await cartService.getCart();
+      // Get current cart from backend
+      const backendCart = await this.getCart();
+      
+      // Merge logic can be implemented here if needed
+      return backendCart;
     } catch (error) {
-      console.error("❌ Error syncing cart:", error);
+      console.error('Error syncing cart:', error);
       throw error;
     }
-  },
-};
+  }
 
-export default cartService;
+  // Save cart to localStorage
+  saveCartToLocalStorage(cart) {
+    try {
+      localStorage.setItem('cart', JSON.stringify({
+        items: cart.items,
+        totalItems: cart.totalItems,
+        totalAmount: cart.totalAmount,
+        cartId: cart.cartId,
+        timestamp: new Date().toISOString()
+      }));
+    } catch (error) {
+      console.error('Error saving cart to localStorage:', error);
+    }
+  }
+
+  // Load cart from localStorage
+  loadCartFromLocalStorage() {
+    try {
+      const savedCart = localStorage.getItem('cart');
+      if (savedCart) {
+        const parsedCart = JSON.parse(savedCart);
+        return this.transformCartData(parsedCart);
+      }
+    } catch (error) {
+      console.error('Error loading cart from localStorage:', error);
+    }
+    return this.transformCartData(null);
+  }
+}
+
+export default new CartService();
