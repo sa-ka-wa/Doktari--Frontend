@@ -56,11 +56,16 @@ export default defineConfig({
     },
   },
   server: {
-    host: "doktari.lvh.me", // 👈 allows access via subdomain
-    port: 3002, // 👈 match your intended domain
-    open: true, // 👈 automatically open browser
-    fs: {
-      allow: [".."], // ✅ still allow shared folder
+    host: "doktari.lvh.me",
+    port: 3002,
+    open: true,
+    fs: { allow: [".."] },
+    proxy: {
+      "/api": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 });
