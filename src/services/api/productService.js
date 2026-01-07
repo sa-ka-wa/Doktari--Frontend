@@ -20,6 +20,8 @@ export const productService = {
 
       if (params.limit) {
         queryParams.limit = params.limit;
+      } else {
+        queryParams.limit = 100; // Default to 100 if no limit specified
       }
 
       const response = await apiClient.get("/products/", {

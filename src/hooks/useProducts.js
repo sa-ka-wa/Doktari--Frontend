@@ -1,6 +1,6 @@
 // src/hooks/useProducts.js
-import { useState, useEffect, useCallback } from 'react';
-import { productService } from '../services/api/productService';
+import { useState, useEffect, useCallback } from "react";
+import { productService } from "../services/api/productService";
 
 export const useProducts = (options = {}) => {
   const {
@@ -8,8 +8,8 @@ export const useProducts = (options = {}) => {
     brandId = null,
     category = null,
     limit = null,
-    sort = 'newest',
-    search = ''
+    sort = "newest",
+    search = "",
   } = options;
 
   const [products, setProducts] = useState([]);
@@ -18,38 +18,49 @@ export const useProducts = (options = {}) => {
   const [pagination, setPagination] = useState({
     page: 1,
     totalPages: 1,
-    totalCount: 0
+    totalCount: 0,
   });
 
-  const fetchProducts = useCallback(async (params = {}) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const data = await productService.getProducts({
-        ...params,
-        brand_id: brandId || params.brand_id,
-        category: category || params.category,
-        limit: limit || params.limit,
-        sort: sort || params.sort,
-        search: search || params.search
-      });
-      
-      setProducts(data.products || data);
-      
-      if (data.pagination) {
-        setPagination(data.pagination);
+  const fetchProducts = useCallback(
+    async (params = {}) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const data = await productService.getProducts({
+          ...params,
+          brand_id: brandId || params.brand_id,
+          category: category || params.category,
+          limit: limit || params.limit,
+          sort: sort || params.sort,
+          search: search || params.search,
+        });
+
+        const productsArray =
+          data.products || data.data?.products || data.data || data;
+
+        if (Array.isArray(productsArray)) {
+          setProducts(productsArray);
+        } else {
+          console.error("Products API response is not an array:", data);
+          setProducts([]);
+        }
+
+        if (data.pagination) {
+          setPagination(data.pagination);
+        }
+
+        return data;
+      } catch (err) {
+        setError(err.message || "Failed to fetch products");
+        console.error("Error in useProducts:", err);
+        throw err;
+      } finally {
+        setLoading(false);
       }
-      
-      return data;
-    } catch (err) {
-      setError(err.message || 'Failed to fetch products');
-      console.error('Error in useProducts:', err);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  }, [brandId, category, limit, sort, search]);
+    },
+    [brandId, category, limit, sort, search]
+  );
 
   useEffect(() => {
     if (autoFetch) {
@@ -60,23 +71,28 @@ export const useProducts = (options = {}) => {
   const createProduct = async (productData) => {
     try {
       const newProduct = await productService.createProduct(productData);
-      setProducts(prev => [...prev, newProduct]);
+      setProducts((prev) => [...prev, newProduct]);
       return newProduct;
     } catch (err) {
-      setError(err.message || 'Failed to create product');
+      setError(err.message || "Failed to create product");
       throw err;
     }
   };
 
   const updateProduct = async (productId, productData) => {
     try {
-      const updatedProduct = await productService.updateProduct(productId, productData);
-      setProducts(prev => prev.map(product => 
-        product.id === productId ? updatedProduct : product
-      ));
+      const updatedProduct = await productService.updateProduct(
+        productId,
+        productData
+      );
+      setProducts((prev) =>
+        prev.map((product) =>
+          product.id === productId ? updatedProduct : product
+        )
+      );
       return updatedProduct;
     } catch (err) {
-      setError(err.message || 'Failed to update product');
+      setError(err.message || "Failed to update product");
       throw err;
     }
   };
@@ -84,9 +100,9 @@ export const useProducts = (options = {}) => {
   const deleteProduct = async (productId) => {
     try {
       await productService.deleteProduct(productId);
-      setProducts(prev => prev.filter(product => product.id !== productId));
+      setProducts((prev) => prev.filter((product) => product.id !== productId));
     } catch (err) {
-      setError(err.message || 'Failed to delete product');
+      setError(err.message || "Failed to delete product");
       throw err;
     }
   };
@@ -97,7 +113,7 @@ export const useProducts = (options = {}) => {
       const product = await productService.getProductById(productId);
       return product;
     } catch (err) {
-      setError(err.message || 'Failed to fetch product');
+      setError(err.message || "Failed to fetch product");
       throw err;
     } finally {
       setLoading(false);
@@ -118,7 +134,7 @@ export const useProducts = (options = {}) => {
       const data = await productService.getProductsByBrand(brandId, params);
       return data;
     } catch (err) {
-      setError(err.message || 'Failed to fetch brand products');
+      setError(err.message || "Failed to fetch brand products");
       throw err;
     } finally {
       setLoading(false);
@@ -131,7 +147,7 @@ export const useProducts = (options = {}) => {
       const data = await productService.getFeaturedProducts(limit);
       return data;
     } catch (err) {
-      setError(err.message || 'Failed to fetch featured products');
+      setError(err.message || "Failed to fetch featured products");
       throw err;
     } finally {
       setLoading(false);
@@ -144,7 +160,7 @@ export const useProducts = (options = {}) => {
       const data = await productService.getNewArrivals(limit);
       return data;
     } catch (err) {
-      setError(err.message || 'Failed to fetch new arrivals');
+      setError(err.message || "Failed to fetch new arrivals");
       throw err;
     } finally {
       setLoading(false);
@@ -157,7 +173,7 @@ export const useProducts = (options = {}) => {
       const data = await productService.getBestSellers(limit);
       return data;
     } catch (err) {
-      setError(err.message || 'Failed to fetch best sellers');
+      setError(err.message || "Failed to fetch best sellers");
       throw err;
     } finally {
       setLoading(false);
@@ -180,16 +196,13 @@ export const useProducts = (options = {}) => {
     getFeaturedProducts,
     getNewArrivals,
     getBestSellers,
-    refetch: fetchProducts
+    refetch: fetchProducts,
   };
 };
 
 // Singular hook for single product
 export const useProduct = (productId, options = {}) => {
-  const {
-    autoFetch = true,
-    includeRelated = false
-  } = options;
+  const { autoFetch = true, includeRelated = false } = options;
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(autoFetch);
@@ -200,24 +213,24 @@ export const useProduct = (productId, options = {}) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const productData = await productService.getProductById(id);
       setProduct(productData);
-      
+
       if (includeRelated && productData) {
         const related = await productService.getProducts({
           category: productData.category,
           brand_id: productData.brand_id,
           limit: 4,
-          exclude: id
+          exclude: id,
         });
         setRelatedProducts(related.products || related);
       }
-      
+
       return productData;
     } catch (err) {
-      setError(err.message || 'Failed to fetch product');
-      console.error('Error in useProduct:', err);
+      setError(err.message || "Failed to fetch product");
+      console.error("Error in useProduct:", err);
       throw err;
     } finally {
       setLoading(false);
@@ -232,11 +245,14 @@ export const useProduct = (productId, options = {}) => {
 
   const updateProduct = async (productData) => {
     try {
-      const updatedProduct = await productService.updateProduct(productId, productData);
+      const updatedProduct = await productService.updateProduct(
+        productId,
+        productData
+      );
       setProduct(updatedProduct);
       return updatedProduct;
     } catch (err) {
-      setError(err.message || 'Failed to update product');
+      setError(err.message || "Failed to update product");
       throw err;
     }
   };
@@ -246,18 +262,21 @@ export const useProduct = (productId, options = {}) => {
       await productService.deleteProduct(productId);
       setProduct(null);
     } catch (err) {
-      setError(err.message || 'Failed to delete product');
+      setError(err.message || "Failed to delete product");
       throw err;
     }
   };
 
   const updateStock = async (quantity) => {
     try {
-      const updatedProduct = await productService.updateStock(productId, quantity);
+      const updatedProduct = await productService.updateStock(
+        productId,
+        quantity
+      );
       setProduct(updatedProduct);
       return updatedProduct;
     } catch (err) {
-      setError(err.message || 'Failed to update stock');
+      setError(err.message || "Failed to update stock");
       throw err;
     }
   };
@@ -271,6 +290,6 @@ export const useProduct = (productId, options = {}) => {
     updateProduct,
     deleteProduct,
     updateStock,
-    refetch: fetchProduct
+    refetch: fetchProduct,
   };
 };
