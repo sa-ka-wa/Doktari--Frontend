@@ -1,0 +1,34 @@
+.order-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid;
+  font-weight: 500;
+  text-transform: capitalize;
+  transition: all 0.2s;
+}
+
+.badge-small {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.badge-medium {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.badge-large {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+}
+
+.status-icon {
+  font-size: 0.875em;
+  line-height: 1;
+}
+
+.status-label {
+  line-height: 1;
+}

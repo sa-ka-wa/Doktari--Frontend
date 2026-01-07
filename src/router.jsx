@@ -1,4 +1,3 @@
-// src/router.jsx
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -7,57 +6,115 @@ import {
   Navigate,
 } from "react-router-dom";
 
-import Home from "./pages/Home";
-import ProductCatalog from "./pages/Products/Catalog";
-import ProductDetail from "./pages/Products/Detail";
-import Login from "./pages/Auth/Login";
-import Register from "./pages/Auth/Register";
-import Profile from "./pages/Auth/Profile";
+// Import pages
+import Home from "./pages/Home/Home";
+import ProductCatalog from "./pages/Products/Catalog/ProductCatalog";
+import ProductDetail from "./pages/Products/Detail/ProductDetail";
+import Login from "./pages/Auth/Login/Login";
+import Register from "./pages/Auth/Register/Register";
+import Profile from "./pages/Auth/Profile/Profile";
 import Cart from "./pages/Cart/Cart";
 import Checkout from "./pages/Orders/Checkout/Checkout";
 
-// Admin
+// Admin Pages
 import AdminDashboard from "./pages/Admin/Dashboard/AdminDashboard";
 import BrandManagement from "./pages/Admin/BrandManager/BrandManagement";
 import ProductManagement from "./pages/Admin/Products/ProductManagement";
 import UserManagement from "./pages/Admin/Users/UserManagement";
+
+// Staff Pages
 import StaffDashboard from "./pages/Admin-Staff/Dashboard/StaffDashboard/StaffDashboard";
-
-// Staff components
 import StaffOverview from "./pages/Admin-Staff/Dashboard/StaffOverview/StaffOverview";
-import OrderManagement from "./pages/Admin-Staff/Orders/OrderManagement/OrderManagement";
-import OrderDetail from "./pages/Admin-Staff/Orders/OrderDetail/OrderDetail"; // You'll need to create this
+import StaffOrderManagement from "./pages/Admin-Staff/Orders/OrderManagement/OrderManagement";
+import StaffOrderDetail from "./pages/Admin-Staff/Orders/OrderDetail/OrderDetail";
 
-// Brand pages (public)
+// Brand Pages
 import BrandDirectory from "./pages/Brands/Directory/BrandDirectory";
 import BrandDetailPage from "./pages/Brands/Detail/BrandDetail";
 
+// Order Pages (Customer)
+import CustomerOrderHistory from "./pages/Orders/History/OrderHistory";
+import CustomerOrderDetail from "./pages/Orders/Detail/OrderDetail";
+
+// Payment Pages
+import PaymentSuccess from "./pages/Payments/Success/PaymentSuccess";
+import PaymentFailed from "./pages/Payments/Failed/PaymentFailed";
+
+// Protected Route
 import ProtectedRoute from "./router/ProtectedRoute";
+
+// Custom Design Pages
+import CustomDesign from "./pages/CustomDesign/CustomDesign";
 
 const AppRouter = () => {
   return (
     <Router>
       <Routes>
-        {/* Public routes */}
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
-        <Route path="/products/catalog" element={<ProductCatalog />} />
-        <Route path="/products/detail/:id" element={<ProductDetail />} />
+        <Route path="/products" element={<ProductCatalog />} />
+        <Route path="/products/:id" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
+        <Route path="/custom-design" element={<CustomDesign />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/profile" element={<Profile />} />
-
-        {/* Brand public routes */}
         <Route path="/brands" element={<BrandDirectory />} />
         <Route path="/brands/:brandId" element={<BrandDetailPage />} />
 
-        {/* Admin routes */}
+        {/* Customer Protected Routes */}
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <CustomerOrderHistory />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/orders/:orderId"
+          element={
+            <ProtectedRoute>
+              <CustomerOrderDetail />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Payment Protected Routes */}
+        <Route
+          path="/payments/success"
+          element={
+            <ProtectedRoute>
+              <PaymentSuccess />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/payments/failed"
+          element={
+            <ProtectedRoute>
+              <PaymentFailed />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin Routes */}
         <Route
           path="/admin"
           element={
             <ProtectedRoute role="admin">
-              <AdminDashboard />
+              <Navigate to="/admin/dashboard" replace />
             </ProtectedRoute>
           }
         />
@@ -84,7 +141,7 @@ const AppRouter = () => {
           path="/admin/brands/create"
           element={
             <ProtectedRoute role="admin">
-              <BrandManagement />
+              <BrandManagement mode="create" />
             </ProtectedRoute>
           }
         />
@@ -93,7 +150,7 @@ const AppRouter = () => {
           path="/admin/brands/:brandId/edit"
           element={
             <ProtectedRoute role="admin">
-              <BrandManagement />
+              <BrandManagement mode="edit" />
             </ProtectedRoute>
           }
         />
@@ -116,7 +173,7 @@ const AppRouter = () => {
           }
         />
 
-        {/* Staff routes - nested structure */}
+        {/* Staff Routes (Nested Layout) */}
         <Route
           path="/staff"
           element={
@@ -134,13 +191,13 @@ const AppRouter = () => {
         >
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<StaffOverview />} />
-          <Route path="orders" element={<OrderManagement />} />
-          <Route path="orders/:id" element={<OrderDetail />} />
+          <Route path="orders" element={<StaffOrderManagement />} />
+          <Route path="orders/:orderId" element={<StaffOrderDetail />} />
           <Route path="products" element={<ProductManagement />} />
-          {/* Add other staff routes as needed */}
+          <Route path="profile" element={<Profile />} />
         </Route>
 
-        {/* Catch-all */}
+        {/* 404 Route */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

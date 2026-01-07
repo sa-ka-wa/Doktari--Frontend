@@ -7,10 +7,10 @@ import "./ProductDetail.css";
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   // Use the hook - it returns { product, loading, error }
   const { product, loading, error } = useProduct(id);
-  
+
   const [selectedSize, setSelectedSize] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [quantity, setQuantity] = useState(1);
@@ -23,9 +23,10 @@ const ProductDetail = () => {
 
     if (product) {
       // Map backend properties to frontend expectations
-      const size = product.size || product.title?.match(/\((\w+)\)/)?.[1] || "One Size";
+      const size =
+        product.size || product.title?.match(/\((\w+)\)/)?.[1] || "One Size";
       const color = product.color || "Default";
-      
+
       setSelectedSize(size);
       setSelectedColor(color);
     }
@@ -84,7 +85,7 @@ const ProductDetail = () => {
       <div className="product-not-found">
         <h2>Error Loading Product</h2>
         <p>{error}</p>
-        <Link to="/products/catalog" className="btn btn-primary">
+        <Link to="/products" className="btn btn-primary">
           Back to Catalog
         </Link>
       </div>
@@ -96,7 +97,7 @@ const ProductDetail = () => {
       <div className="product-not-found">
         <h2>Product Not Found</h2>
         <p>The product you're looking for doesn't exist.</p>
-        <Link to="/products/catalog" className="btn btn-primary">
+        <Link to="/products" className="btn btn-primary">
           Back to Catalog
         </Link>
       </div>
@@ -105,14 +106,17 @@ const ProductDetail = () => {
 
   // Map backend properties to frontend expectations
   const productName = product.title || product.name || "Unnamed Product";
-  const productImage = product.image_url || product.image || "/images/placeholder-tshirt.jpg";
+  const productImage =
+    product.image_url || product.image || "/images/placeholder-tshirt.jpg";
   const productImages = [productImage];
   const productSizes = product.size ? [product.size] : ["One Size"];
   const productColors = product.color ? [product.color] : ["Default"];
   const inStock = (product.stock_quantity || 0) > 0;
   const stockQuantity = product.stock_quantity || 0;
-  const productBrand = product.brand_name || product.brand?.name || "Unknown Brand";
-  const productDescription = product.description || product.fullDescription || "";
+  const productBrand =
+    product.brand_name || product.brand?.name || "Unknown Brand";
+  const productDescription =
+    product.description || product.fullDescription || "";
 
   return (
     <div className="product-detail">
@@ -121,7 +125,7 @@ const ProductDetail = () => {
         <nav className="breadcrumb">
           <Link to="/">Home</Link>
           <span>/</span>
-          <Link to="/products/catalog">Products</Link>
+          <Link to="/products">Products</Link>
           <span>/</span>
           <span>{productName}</span>
         </nav>
@@ -148,7 +152,9 @@ const ProductDetail = () => {
                 {productImages.map((image, index) => (
                   <button
                     key={index}
-                    className={`thumbnail ${activeImage === index ? "active" : ""}`}
+                    className={`thumbnail ${
+                      activeImage === index ? "active" : ""
+                    }`}
                     onClick={() => setActiveImage(index)}
                   >
                     <img
@@ -168,21 +174,27 @@ const ProductDetail = () => {
           <div className="product-info">
             <div className="product-header">
               <h1 className="product-title">{productName}</h1>
-              <div className="product-price">${product.price?.toFixed(2) || "0.00"}</div>
+              <div className="product-price">
+                ${product.price?.toFixed(2) || "0.00"}
+              </div>
             </div>
 
             <div className="product-meta">
               {productBrand && (
                 <span className="brand">Brand: {productBrand}</span>
               )}
-              <span className="category">Category: {product.category || "Uncategorized"}</span>
+              <span className="category">
+                Category: {product.category || "Uncategorized"}
+              </span>
               {product.style_tag && (
                 <span className="style-tag">Style: {product.style_tag}</span>
               )}
               {product.artist && (
                 <span className="artist">Artist: {product.artist}</span>
               )}
-              <span className={`stock ${inStock ? "in-stock" : "out-of-stock"}`}>
+              <span
+                className={`stock ${inStock ? "in-stock" : "out-of-stock"}`}
+              >
                 {inStock
                   ? `In Stock (${stockQuantity} available)`
                   : "Out of Stock"}
@@ -205,7 +217,9 @@ const ProductDetail = () => {
                   {productSizes.map((size) => (
                     <button
                       key={size}
-                      className={`size-option ${selectedSize === size ? "selected" : ""}`}
+                      className={`size-option ${
+                        selectedSize === size ? "selected" : ""
+                      }`}
                       onClick={() => setSelectedSize(size)}
                     >
                       {size}
@@ -223,7 +237,9 @@ const ProductDetail = () => {
                   {productColors.map((color) => (
                     <button
                       key={color}
-                      className={`color-option ${selectedColor === color ? "selected" : ""}`}
+                      className={`color-option ${
+                        selectedColor === color ? "selected" : ""
+                      }`}
                       onClick={() => setSelectedColor(color)}
                       title={color}
                     >
@@ -231,7 +247,10 @@ const ProductDetail = () => {
                         className="color-swatch"
                         style={{
                           backgroundColor: color.toLowerCase(),
-                          border: color.toLowerCase() === "white" ? "1px solid #ddd" : "none",
+                          border:
+                            color.toLowerCase() === "white"
+                              ? "1px solid #ddd"
+                              : "none",
                         }}
                       ></span>
                       <span className="color-name">{color}</span>

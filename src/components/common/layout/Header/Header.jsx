@@ -89,7 +89,7 @@ const Header = ({ brand = "Prolific" }) => {
             </>
           ) : (
             <>
-              <Link to="/products/catalog">Products</Link>
+              <Link to="/products">Products</Link>
               <Link to="/design">Custom Design</Link>
               <Link to="/about">About</Link>
               <Link to="/contact">Contact</Link>
@@ -225,10 +225,7 @@ const Header = ({ brand = "Prolific" }) => {
             </>
           ) : (
             <>
-              <Link
-                to="/products/catalog"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <Link to="/products" onClick={() => setMobileMenuOpen(false)}>
                 Products
               </Link>
               <Link to="/design" onClick={() => setMobileMenuOpen(false)}>
