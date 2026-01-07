@@ -1,11 +1,11 @@
+// src/pages/Cart/Cart.jsx
 import React from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
 import Button from "../../components/common/Button";
 import "./Cart.css";
 
 const Cart = () => {
-  const navigate = useNavigate();
   const {
     items,
     totalItems,
@@ -14,6 +14,8 @@ const Cart = () => {
     removeFromCart,
     clearCart,
   } = useCart();
+
+  const navigate = useNavigate();
 
   if (items.length === 0) {
     return (
@@ -37,7 +39,7 @@ const Cart = () => {
           </svg>
           <h2>Your cart is empty</h2>
           <p>Looks like you haven't added any items to your cart yet.</p>
-          <Link to="/products">
+          <Link to="/products/catalog">
             <Button variant="primary" size="lg">
               Start Shopping
             </Button>
@@ -48,7 +50,8 @@ const Cart = () => {
   }
 
   const handleCheckout = () => {
-    // Use React Router navigate instead of window.location
+    // For now, just navigate to checkout page
+    // You can add validation logic here later
     navigate("/checkout");
   };
 
@@ -116,7 +119,7 @@ const Cart = () => {
                   </div>
 
                   <div className="cart-item-price">
-                    <span className="price">KSh {item.price.toFixed(2)}</span>
+                    <span className="price">${item.price.toFixed(2)}</span>
                   </div>
 
                   <div className="cart-item-quantity">
@@ -150,7 +153,7 @@ const Cart = () => {
 
                   <div className="cart-item-total">
                     <span className="total-price">
-                      KSh {(item.price * item.quantity).toFixed(2)}
+                      ${(item.price * item.quantity).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -158,7 +161,7 @@ const Cart = () => {
             </div>
 
             <div className="continue-shopping">
-              <Link to="/products">
+              <Link to="/products/catalog">
                 <Button variant="outline">← Continue Shopping</Button>
               </Link>
             </div>
@@ -170,7 +173,7 @@ const Cart = () => {
 
               <div className="summary-row">
                 <span className="row-label">Subtotal</span>
-                <span className="row-value">KSh {totalAmount.toFixed(2)}</span>
+                <span className="row-value">${totalAmount.toFixed(2)}</span>
               </div>
 
               <div className="summary-row">
@@ -179,27 +182,23 @@ const Cart = () => {
               </div>
 
               <div className="summary-row">
-                <span className="row-label">Tax (16% VAT)</span>
-                <span className="row-value">
-                  KSh {(totalAmount * 0.16).toFixed(2)}
-                </span>
+                <span className="row-label">Tax</span>
+                <span className="row-value">Will be calculated</span>
               </div>
 
               <div className="summary-divider"></div>
 
               <div className="summary-row total-row">
                 <span className="total-label">Estimated Total</span>
-                <span className="total-value">
-                  KSh {(totalAmount * 1.16).toFixed(2)}
-                </span>
+                <span className="total-value">${totalAmount.toFixed(2)}</span>
               </div>
 
               <div className="checkout-action">
                 <Button
                   variant="primary"
                   size="lg"
+                  fullWidth
                   onClick={handleCheckout}
-                  className="checkout-btn"
                 >
                   Proceed to Checkout
                 </Button>
@@ -213,7 +212,6 @@ const Cart = () => {
                   <span className="payment-icon">📱</span>
                   <span className="payment-icon">💰</span>
                 </div>
-                <p className="mpesa-note">M-Pesa payments supported</p>
               </div>
             </div>
           </div>

@@ -1,7 +1,11 @@
 import apiClient from "./apiClient";
 
 const orderService = {
-  // Get orders with role-based filtering
+  // =========================
+  // ORDERS (GENERAL)
+  // =========================
+
+  // Get orders (role-based: admin/staff/user)
   getOrders: async (params = {}) => {
     try {
       const response = await apiClient.get("/orders", { params });
@@ -12,7 +16,7 @@ const orderService = {
     }
   },
 
-  // Get specific order
+  // Get specific order by ID
   getOrder: async (orderId) => {
     try {
       const response = await apiClient.get(`/orders/${orderId}`);
@@ -23,18 +27,50 @@ const orderService = {
     }
   },
 
-  // Create new order
-  createOrder: async (orderData) => {
+  // Get current user's orders
+  getMyOrders: async () => {
     try {
-      const response = await apiClient.post("/orders", orderData);
+      const response = await apiClient.get("/orders/my-orders");
       return response.data;
     } catch (error) {
-      console.error("Error creating order:", error);
+      console.error("Get my orders error:", error);
       throw error;
     }
   },
 
-  // Update order status (for staff/admin)
+  // Get order by order number
+  getOrderByNumber: async (orderNumber) => {
+    try {
+      const response = await apiClient.get(`/orders/number/${orderNumber}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching order by number:", error);
+      throw error;
+    }
+  },
+
+  // =========================
+  // CREATE / UPDATE
+  // =========================
+
+  // Create new order
+  createOrder: async (orderData) => {
+    try {
+      console.log("Creating order with data:", orderData);
+      const response = await apiClient.post("/orders", orderData);
+      console.log("Order created:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Order creation error details:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        config: error.config,
+      });
+      throw new Error(error.response?.data?.error || "Failed to create order");
+    }
+  },
+
+  // Update order status (admin / staff)
   updateOrderStatus: async (orderId, status, reason = "") => {
     try {
       const response = await apiClient.patch(`/orders/${orderId}/status`, {
@@ -48,7 +84,7 @@ const orderService = {
     }
   },
 
-  // Cancel order
+  // Cancel order (user)
   cancelOrder: async (orderId, reason = "") => {
     try {
       const response = await apiClient.post(`/orders/${orderId}/cancel`, {
@@ -61,7 +97,11 @@ const orderService = {
     }
   },
 
-  // Add tracking info (for brand staff/admin)
+  // =========================
+  // SHIPPING & TRACKING
+  // =========================
+
+  // Add tracking info (brand staff/admin)
   addTrackingInfo: async (orderId, trackingData) => {
     try {
       const response = await apiClient.post(
@@ -88,6 +128,10 @@ const orderService = {
     }
   },
 
+  // =========================
+  // STATS & SEARCH
+  // =========================
+
   // Get order statistics
   getOrderStats: async (params = {}) => {
     try {
@@ -108,17 +152,6 @@ const orderService = {
       return response.data;
     } catch (error) {
       console.error("Error searching orders:", error);
-      throw error;
-    }
-  },
-
-  // Get order by number
-  getOrderByNumber: async (orderNumber) => {
-    try {
-      const response = await apiClient.get(`/orders/number/${orderNumber}`);
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching order by number:", error);
       throw error;
     }
   },

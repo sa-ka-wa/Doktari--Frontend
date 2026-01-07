@@ -23,6 +23,7 @@ const Input = forwardRef(
       iconPosition = "left",
       addonBefore,
       addonAfter,
+      multiline = false,
       ...props
     },
     ref
@@ -52,31 +53,38 @@ const Input = forwardRef(
       onBlur?.(e);
     };
 
-    const renderInput = () => (
-      <div className="input-wrapper">
-        {icon && iconPosition === "left" && (
-          <span className="input-icon input-icon-left">{icon}</span>
-        )}
+    const renderInput = () => {
+      const commonProps = {
+        ref,
+        className: inputClasses,
+        disabled,
+        placeholder,
+        value,
+        onChange,
+        onFocus: handleFocus,
+        onBlur: handleBlur,
+        required,
+        ...props,
+      };
 
-        <input
-          ref={ref}
-          type={type}
-          className={inputClasses}
-          disabled={disabled}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          required={required}
-          {...props}
-        />
+      return (
+        <div className="input-wrapper">
+          {icon && iconPosition === "left" && (
+            <span className="input-icon input-icon-left">{icon}</span>
+          )}
 
-        {icon && iconPosition === "right" && (
-          <span className="input-icon input-icon-right">{icon}</span>
-        )}
-      </div>
-    );
+          {multiline ? (
+            <textarea {...commonProps} />
+          ) : (
+            <input type={type} {...commonProps} />
+          )}
+
+          {icon && iconPosition === "right" && (
+            <span className="input-icon input-icon-right">{icon}</span>
+          )}
+        </div>
+      );
+    };
 
     const renderWithAddons = () => (
       <div className="input-addon-group">

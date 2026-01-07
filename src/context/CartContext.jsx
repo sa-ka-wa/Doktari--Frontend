@@ -1,20 +1,21 @@
-import React, { createContext, useContext, useReducer, useEffect } from "react";
-import { useAuth } from "./AuthContext";
-import cartService from "../services/api/cartService";
+// src/context/CartContext.jsx
+import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import { useAuth } from './AuthContext';
+import cartService from '../services/api/cartService';
 
-// Cart item structure
+// Cart item structure (for reference)
 const CartItem = {
-  id: "",
-  product_id: "",
-  title: "",
+  id: '',
+  product_id: '',
+  title: '',
   price: 0,
   quantity: 1,
-  size: "",
-  color: "",
-  image_url: "",
+  size: '',
+  color: '',
+  image_url: '',
   stock_quantity: 0,
   brand_id: null,
-  brand_name: "",
+  brand_name: ''
 };
 
 // Initial state
@@ -25,82 +26,77 @@ const initialState = {
   isLoading: false,
   error: null,
   cartId: null,
-  isSynced: false,
+  lastSynced: null
 };
 
 // Action types
 const CartActionTypes = {
-  ADD_ITEM: "ADD_ITEM",
-  REMOVE_ITEM: "REMOVE_ITEM",
-  UPDATE_QUANTITY: "UPDATE_QUANTITY",
-  CLEAR_CART: "CLEAR_CART",
-  SET_CART: "SET_CART",
-  SET_LOADING: "SET_LOADING",
-  SET_ERROR: "SET_ERROR",
-  SYNC_START: "SYNC_START",
-  SYNC_SUCCESS: "SYNC_SUCCESS",
-  SYNC_FAILURE: "SYNC_FAILURE",
+  SET_CART: 'SET_CART',
+  ADD_ITEM: 'ADD_ITEM',
+  REMOVE_ITEM: 'REMOVE_ITEM',
+  UPDATE_QUANTITY: 'UPDATE_QUANTITY',
+  CLEAR_CART: 'CLEAR_CART',
+  SET_LOADING: 'SET_LOADING',
+  SET_ERROR: 'SET_ERROR',
+  SYNC_CART: 'SYNC_CART'
 };
 
 // Reducer function
 const cartReducer = (state, action) => {
   switch (action.type) {
+    case CartActionTypes.SET_CART:
+      return {
+        ...state,
+        items: action.payload.items || [],
+        totalItems: action.payload.totalItems || 0,
+        totalAmount: action.payload.totalAmount || 0,
+        cartId: action.payload.cartId || null,
+        lastSynced: new Date().toISOString(),
+        error: null
+      };
+
     case CartActionTypes.ADD_ITEM:
       const existingItemIndex = state.items.findIndex(
-        (item) =>
-          item.product_id === action.payload.product_id &&
-          item.size === action.payload.size &&
-          item.color === action.payload.color
+        item => item.product_id === action.payload.product_id && 
+                item.size === action.payload.size && 
+                item.color === action.payload.color
       );
 
       if (existingItemIndex > -1) {
-        // Update existing item
         const updatedItems = [...state.items];
         updatedItems[existingItemIndex] = {
           ...updatedItems[existingItemIndex],
-          quantity:
-            updatedItems[existingItemIndex].quantity + action.payload.quantity,
+          quantity: updatedItems[existingItemIndex].quantity + action.payload.quantity
         };
 
         return {
           ...state,
           items: updatedItems,
           totalItems: state.totalItems + action.payload.quantity,
-          totalAmount:
-            state.totalAmount + action.payload.price * action.payload.quantity,
-          isSynced: false,
+          totalAmount: state.totalAmount + (action.payload.price * action.payload.quantity)
         };
       } else {
-        // Add new item
         return {
           ...state,
           items: [...state.items, action.payload],
           totalItems: state.totalItems + action.payload.quantity,
-          totalAmount:
-            state.totalAmount + action.payload.price * action.payload.quantity,
-          isSynced: false,
+          totalAmount: state.totalAmount + (action.payload.price * action.payload.quantity)
         };
       }
 
     case CartActionTypes.REMOVE_ITEM:
-      const itemToRemove = state.items.find(
-        (item) => item.id === action.payload.id
-      );
+      const itemToRemove = state.items.find(item => item.id === action.payload.id);
+      if (!itemToRemove) return state;
 
       return {
         ...state,
-        items: state.items.filter((item) => item.id !== action.payload.id),
-        totalItems: state.totalItems - (itemToRemove?.quantity || 0),
-        totalAmount:
-          state.totalAmount -
-          (itemToRemove?.price || 0) * (itemToRemove?.quantity || 0),
-        isSynced: false,
+        items: state.items.filter(item => item.id !== action.payload.id),
+        totalItems: state.totalItems - itemToRemove.quantity,
+        totalAmount: state.totalAmount - (itemToRemove.price * itemToRemove.quantity)
       };
 
     case CartActionTypes.UPDATE_QUANTITY:
-      const itemIndex = state.items.findIndex(
-        (item) => item.id === action.payload.id
-      );
+      const itemIndex = state.items.findIndex(item => item.id === action.payload.id);
       if (itemIndex === -1) return state;
 
       const oldItem = state.items[itemIndex];
@@ -109,58 +105,33 @@ const cartReducer = (state, action) => {
       const updatedItems = [...state.items];
       updatedItems[itemIndex] = {
         ...oldItem,
-        quantity: action.payload.quantity,
+        quantity: action.payload.quantity
       };
 
       return {
         ...state,
         items: updatedItems,
         totalItems: state.totalItems + quantityDiff,
-        totalAmount: state.totalAmount + oldItem.price * quantityDiff,
-        isSynced: false,
+        totalAmount: state.totalAmount + (oldItem.price * quantityDiff)
       };
 
     case CartActionTypes.CLEAR_CART:
       return {
         ...initialState,
-        isSynced: false,
-      };
-
-    case CartActionTypes.SET_CART:
-      return {
-        ...state,
-        items: action.payload.items || [],
-        totalItems: action.payload.totalItems || 0,
-        totalAmount: action.payload.totalAmount || 0,
-        cartId: action.payload.cartId || null,
-        isSynced: action.payload.isSynced || false,
+        lastSynced: new Date().toISOString()
       };
 
     case CartActionTypes.SET_LOADING:
       return { ...state, isLoading: action.payload };
 
     case CartActionTypes.SET_ERROR:
-      return { ...state, error: action.payload, isLoading: false };
+      return { ...state, error: action.payload };
 
-    case CartActionTypes.SYNC_START:
-      return { ...state, isLoading: true, isSynced: false };
-
-    case CartActionTypes.SYNC_SUCCESS:
+    case CartActionTypes.SYNC_CART:
       return {
         ...state,
-        isLoading: false,
-        isSynced: true,
-        items: action.payload.items || state.items,
-        totalItems: action.payload.totalItems || state.totalItems,
-        totalAmount: action.payload.totalAmount || state.totalAmount,
-      };
-
-    case CartActionTypes.SYNC_FAILURE:
-      return {
-        ...state,
-        isLoading: false,
-        isSynced: false,
-        error: action.payload,
+        ...action.payload,
+        lastSynced: new Date().toISOString()
       };
 
     default:
@@ -174,358 +145,215 @@ const CartContext = createContext();
 // Provider component
 export const CartProvider = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, initialState);
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, token } = useAuth();
 
-  // Convert server cart items to local format
-  const convertServerToLocal = (serverCart) => {
-    if (!serverCart || !serverCart.items) {
-      return { items: [], totalItems: 0, totalAmount: 0 };
-    }
-
-    const items = serverCart.items.map((item) => {
-      const product = item.product || {};
-      return {
-        id: `${product.id}-${item.size || "Default"}-${
-          item.color || "Default"
-        }`,
-        product_id: product.id,
-        title: product.title || product.name || "Unknown Product",
-        price: product.price || 0,
-        quantity: item.quantity || 1,
-        size: item.size || "Default",
-        color: item.color || "Default",
-        image_url: product.image_url || product.imageUrl || "",
-        stock_quantity: product.stock_quantity || 0,
-        brand_id: product.brand_id || null,
-        brand_name: product.brand_name || product.brand?.name || "",
-      };
-    });
-
-    const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-    const totalAmount = items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-
-    return { items, totalItems, totalAmount, isSynced: true };
-  };
-
-  // Load cart from server on mount and when user changes
+  // Load cart from backend on mount
   useEffect(() => {
     const loadCart = async () => {
       try {
         dispatch({ type: CartActionTypes.SET_LOADING, payload: true });
-
-        // Try to get cart from server
-        const serverCart = await cartService.getCart();
-        console.log("🛒 Loaded cart from server:", serverCart);
-
-        if (serverCart && serverCart.items) {
-          const localCart = convertServerToLocal(serverCart);
-          dispatch({
-            type: CartActionTypes.SET_CART,
-            payload: { ...localCart, isSynced: true },
-          });
-        } else {
-          // Try to load from localStorage as fallback
-          const savedCart = localStorage.getItem("cart");
-          if (savedCart) {
-            const parsedCart = JSON.parse(savedCart);
-            console.log("📦 Loaded cart from localStorage:", parsedCart);
-            dispatch({
-              type: CartActionTypes.SET_CART,
-              payload: { ...parsedCart, isSynced: false },
-            });
-          }
+        
+        // Try to load from backend
+        const cart = await cartService.getCart();
+        dispatch({ type: CartActionTypes.SET_CART, payload: cart });
+        
+        // Save to localStorage as backup
+        cartService.saveCartToLocalStorage(cart);
+        
+        // Save session ID for guest users
+        if (!isAuthenticated && cart.session_id) {
+          localStorage.setItem('session_id', cart.session_id);
         }
+        
       } catch (error) {
-        console.error("❌ Error loading cart:", error);
-
-        // Load from localStorage as fallback
-        const savedCart = localStorage.getItem("cart");
-        if (savedCart) {
-          const parsedCart = JSON.parse(savedCart);
-          console.log(
-            "📦 Loaded cart from localStorage (fallback):",
-            parsedCart
-          );
-          dispatch({
-            type: CartActionTypes.SET_CART,
-            payload: { ...parsedCart, isSynced: false },
-          });
-        }
-
-        dispatch({ type: CartActionTypes.SET_ERROR, payload: error.message });
+        console.error('Error loading cart from backend:', error);
+        
+        // Fallback to localStorage
+        const localCart = cartService.loadCartFromLocalStorage();
+        dispatch({ type: CartActionTypes.SET_CART, payload: localCart });
+        
+        dispatch({ 
+          type: CartActionTypes.SET_ERROR, 
+          payload: 'Using local cart. Backend unavailable.' 
+        });
       } finally {
         dispatch({ type: CartActionTypes.SET_LOADING, payload: false });
       }
     };
 
     loadCart();
-  }, [user]);
+  }, [isAuthenticated]);
 
-  // Save cart to localStorage whenever it changes and sync with server if authenticated
+  // Merge guest cart with user cart when user logs in
   useEffect(() => {
-    const saveAndSyncCart = async () => {
-      try {
-        // Always save to localStorage
-        localStorage.setItem(
-          "cart",
-          JSON.stringify({
-            items: state.items,
-            totalItems: state.totalItems,
-            totalAmount: state.totalAmount,
-            cartId: state.cartId,
-            updatedAt: new Date().toISOString(),
-          })
-        );
-
-        // Sync with server if user is authenticated and cart changed
-        if (isAuthenticated && !state.isSynced && state.items.length > 0) {
-          console.log("🔄 Syncing cart with server...");
-          dispatch({ type: CartActionTypes.SYNC_START });
-
-          const syncedCart = await cartService.syncCartWithServer(
-            state.items,
-            user
-          );
-
-          if (syncedCart) {
-            const localCart = convertServerToLocal(syncedCart);
-            dispatch({
-              type: CartActionTypes.SYNC_SUCCESS,
-              payload: localCart,
-            });
-            console.log("✅ Cart synced with server");
-          }
-        }
-      } catch (error) {
-        console.error("❌ Error saving/syncing cart:", error);
-        if (isAuthenticated) {
-          dispatch({
-            type: CartActionTypes.SYNC_FAILURE,
-            payload: error.message,
-          });
+    const mergeCarts = async () => {
+      if (isAuthenticated) {
+        try {
+          dispatch({ type: CartActionTypes.SET_LOADING, payload: true });
+          const cart = await cartService.mergeCarts();
+          dispatch({ type: CartActionTypes.SET_CART, payload: cart });
+        } catch (error) {
+          console.error('Error merging carts:', error);
+        } finally {
+          dispatch({ type: CartActionTypes.SET_LOADING, payload: false });
         }
       }
     };
 
-    // Only save if cart has items or we're not loading
-    if (!state.isLoading) {
-      saveAndSyncCart();
-    }
-  }, [
-    state.items,
-    state.totalItems,
-    state.totalAmount,
-    isAuthenticated,
-    user,
-    state.isSynced,
-  ]);
+    mergeCarts();
+  }, [isAuthenticated]);
 
-  // Actions
-  const addToCart = async (product, quantity = 1, size = "", color = "") => {
+  // Save to localStorage whenever cart changes
+  useEffect(() => {
+    const cartData = {
+      items: state.items,
+      totalItems: state.totalItems,
+      totalAmount: state.totalAmount,
+      cartId: state.cartId
+    };
+    cartService.saveCartToLocalStorage(cartData);
+  }, [state.items, state.totalItems, state.totalAmount, state.cartId]);
+
+  // Add item to cart
+  const addToCart = async (product, quantity = 1, size = '', color = '') => {
     try {
       dispatch({ type: CartActionTypes.SET_LOADING, payload: true });
-
+      
+      // Add to backend
+      const cart = await cartService.addToCart(product.id, quantity, size, color);
+      
+      // Update state with backend response
+      dispatch({ type: CartActionTypes.SET_CART, payload: cart });
+      
+      return {
+        success: true,
+        message: 'Added to cart!',
+        item: {
+          id: `${product.id}-${size}-${color}`,
+          product_id: product.id,
+          title: product.title || product.name,
+          price: product.price,
+          quantity,
+          size,
+          color,
+          image_url: product.image_url || product.imageUrl,
+          stock_quantity: product.stock_quantity,
+          brand_id: product.brand_id,
+          brand_name: product.brand_name || product.brand?.name
+        }
+      };
+      
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      
+      // Fallback to local state
       const cartItem = {
-        id: `${product.id}-${size || "Default"}-${color || "Default"}`,
+        id: `${product.id}-${size}-${color}`,
         product_id: product.id,
         title: product.title || product.name,
         price: product.price,
         quantity,
-        size: size || "Default",
-        color: color || "Default",
-        image_url: product.image_url || product.imageUrl || "",
-        stock_quantity: product.stock_quantity || 0,
+        size,
+        color,
+        image_url: product.image_url || product.imageUrl,
+        stock_quantity: product.stock_quantity,
         brand_id: product.brand_id,
-        brand_name: product.brand_name || product.brand?.name || "",
+        brand_name: product.brand_name || product.brand?.name
       };
-
-      // Try to add to server if authenticated
-      if (isAuthenticated) {
-        try {
-          await cartService.addToCart({
-            product_id: product.id,
-            quantity,
-            size: size || "Default",
-            color: color || "Default",
-          });
-        } catch (serverError) {
-          console.warn(
-            "⚠️ Could not add to server, saving locally:",
-            serverError.message
-          );
-        }
-      }
-
-      // Update local state
+      
       dispatch({ type: CartActionTypes.ADD_ITEM, payload: cartItem });
-
+      
       return {
         success: true,
-        message: "Added to cart!",
-        item: cartItem,
+        message: 'Added to cart (offline mode)',
+        item: cartItem
       };
-    } catch (error) {
-      dispatch({ type: CartActionTypes.SET_ERROR, payload: error.message });
-      throw error;
     } finally {
       dispatch({ type: CartActionTypes.SET_LOADING, payload: false });
     }
   };
 
+  // Remove item from cart
   const removeFromCart = async (itemId) => {
     try {
-      dispatch({ type: CartActionTypes.SET_LOADING, payload: true });
-
-      // Find the item to get its data for server sync
-      const itemToRemove = state.items.find((item) => item.id === itemId);
-
-      // Try to remove from server if authenticated
-      if (isAuthenticated && itemToRemove) {
-        try {
-          // We need to find the server item ID - for now we'll use a workaround
-          // In a real app, you'd need to store server item IDs
-          console.log(
-            "Removing item locally, server sync might be inconsistent"
-          );
-        } catch (serverError) {
-          console.warn("⚠️ Could not remove from server:", serverError.message);
-        }
-      }
-
-      // Update local state
-      dispatch({ type: CartActionTypes.REMOVE_ITEM, payload: { id: itemId } });
+      // Try to remove from backend first
+      await cartService.removeCartItem(itemId);
     } catch (error) {
-      dispatch({ type: CartActionTypes.SET_ERROR, payload: error.message });
-      throw error;
-    } finally {
-      dispatch({ type: CartActionTypes.SET_LOADING, payload: false });
+      console.error('Error removing from backend cart:', error);
+      // Continue with local removal even if backend fails
     }
+    
+    // Update local state
+    dispatch({ type: CartActionTypes.REMOVE_ITEM, payload: { id: itemId } });
   };
 
+  // Update item quantity
   const updateQuantity = async (itemId, quantity) => {
     if (quantity < 1) {
       removeFromCart(itemId);
       return;
     }
-
+    
     try {
-      dispatch({ type: CartActionTypes.SET_LOADING, payload: true });
-
-      // Find the item
-      const itemToUpdate = state.items.find((item) => item.id === itemId);
-
-      // Try to update on server if authenticated
-      if (isAuthenticated && itemToUpdate) {
-        try {
-          // Similar limitation as remove - need server item ID
-          console.log("Updating quantity locally");
-        } catch (serverError) {
-          console.warn(
-            "⚠️ Could not update quantity on server:",
-            serverError.message
-          );
-        }
-      }
-
-      // Update local state
-      dispatch({
-        type: CartActionTypes.UPDATE_QUANTITY,
-        payload: { id: itemId, quantity },
-      });
+      // Try to update backend first
+      await cartService.updateCartItem(itemId, quantity);
     } catch (error) {
-      dispatch({ type: CartActionTypes.SET_ERROR, payload: error.message });
-      throw error;
-    } finally {
-      dispatch({ type: CartActionTypes.SET_LOADING, payload: false });
+      console.error('Error updating quantity in backend cart:', error);
+      // Continue with local update even if backend fails
     }
+    
+    // Update local state
+    dispatch({ type: CartActionTypes.UPDATE_QUANTITY, payload: { id: itemId, quantity } });
   };
 
+  // Clear cart
   const clearCart = async () => {
     try {
-      dispatch({ type: CartActionTypes.SET_LOADING, payload: true });
-
-      // Try to clear on server if authenticated
-      if (isAuthenticated) {
-        try {
-          await cartService.clearCart();
-        } catch (serverError) {
-          console.warn(
-            "⚠️ Could not clear cart on server:",
-            serverError.message
-          );
-        }
-      }
-
-      // Clear local state
-      dispatch({ type: CartActionTypes.CLEAR_CART });
-      localStorage.removeItem("cart");
+      // Try to clear backend first
+      await cartService.clearCart();
     } catch (error) {
-      dispatch({ type: CartActionTypes.SET_ERROR, payload: error.message });
-      throw error;
+      console.error('Error clearing backend cart:', error);
+      // Continue with local clear even if backend fails
+    }
+    
+    // Clear local state
+    dispatch({ type: CartActionTypes.CLEAR_CART });
+  };
+
+  // Sync cart with backend
+  const syncCart = async () => {
+    try {
+      dispatch({ type: CartActionTypes.SET_LOADING, payload: true });
+      const cart = await cartService.syncCart(state.items);
+      dispatch({ type: CartActionTypes.SYNC_CART, payload: cart });
+      return { success: true, message: 'Cart synced successfully' };
+    } catch (error) {
+      console.error('Error syncing cart:', error);
+      return { success: false, message: 'Failed to sync cart' };
     } finally {
       dispatch({ type: CartActionTypes.SET_LOADING, payload: false });
     }
   };
 
-  const syncCart = async () => {
-    if (!isAuthenticated) {
-      console.log("Cannot sync: user not authenticated");
-      return;
-    }
-
-    try {
-      dispatch({ type: CartActionTypes.SYNC_START });
-      const syncedCart = await cartService.syncCartWithServer(
-        state.items,
-        user
-      );
-
-      if (syncedCart) {
-        const localCart = convertServerToLocal(syncedCart);
-        dispatch({
-          type: CartActionTypes.SYNC_SUCCESS,
-          payload: localCart,
-        });
-        return localCart;
-      }
-    } catch (error) {
-      console.error("❌ Sync failed:", error);
-      dispatch({
-        type: CartActionTypes.SYNC_FAILURE,
-        payload: error.message,
-      });
-      throw error;
-    }
+  // Check if product is in cart
+  const isInCart = (productId, size = '', color = '') => {
+    return state.items.some(
+      item => item.product_id === productId && 
+              item.size === size && 
+              item.color === color
+    );
   };
 
   const getCartItemCount = () => state.totalItems;
   const getCartTotal = () => state.totalAmount;
 
-  const isInCart = (productId, size = "", color = "") => {
-    return state.items.some(
-      (item) =>
-        item.product_id === productId &&
-        item.size === (size || "Default") &&
-        item.color === (color || "Default")
-    );
-  };
-
   const value = {
-    cart: {
-      items: state.items,
-      total_items: state.totalItems,
-      total_amount: state.totalAmount,
-      cart_id: state.cartId,
-    },
     items: state.items,
     totalItems: state.totalItems,
     totalAmount: state.totalAmount,
     isLoading: state.isLoading,
     error: state.error,
-    isSynced: state.isSynced,
+    lastSynced: state.lastSynced,
     addToCart,
     removeFromCart,
     updateQuantity,
@@ -533,17 +361,21 @@ export const CartProvider = ({ children }) => {
     syncCart,
     getCartItemCount,
     getCartTotal,
-    isInCart,
+    isInCart
   };
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  return (
+    <CartContext.Provider value={value}>
+      {children}
+    </CartContext.Provider>
+  );
 };
 
 // Custom hook
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
-    throw new Error("useCart must be used within a CartProvider");
+    throw new Error('useCart must be used within a CartProvider');
   }
   return context;
-};
+};       

@@ -55,30 +55,30 @@ const ProductCatalog = () => {
     }
 
     // Sort products
-  switch (filters.sortBy) {
-  case "price-low":
-    result = [...result].sort((a, b) => (a?.price || 0) - (b?.price || 0));
-    break;
-  case "price-high":
-    result = [...result].sort((a, b) => (b?.price || 0) - (a?.price || 0));
-    break;
-  case "name":
-    result = [...result].sort((a, b) => {
-      const nameA = a?.name || a?.title || '';
-      const nameB = b?.name || b?.title || '';
-      return nameA.localeCompare(nameB);
-    });
-    break;
-  case "newest":
-    result = [...result].sort((a, b) => {
-      const dateA = a?.created_at ? new Date(a.created_at) : new Date(0);
-      const dateB = b?.created_at ? new Date(b.created_at) : new Date(0);
-      return dateB - dateA;
-    });
-    break;
-  default:
-    break;
-}
+    switch (filters.sortBy) {
+      case "price-low":
+        result = [...result].sort((a, b) => (a?.price || 0) - (b?.price || 0));
+        break;
+      case "price-high":
+        result = [...result].sort((a, b) => (b?.price || 0) - (a?.price || 0));
+        break;
+      case "name":
+        result = [...result].sort((a, b) => {
+          const nameA = a?.name || a?.title || "";
+          const nameB = b?.name || b?.title || "";
+          return nameA.localeCompare(nameB);
+        });
+        break;
+      case "newest":
+        result = [...result].sort((a, b) => {
+          const dateA = a?.created_at ? new Date(a.created_at) : new Date(0);
+          const dateB = b?.created_at ? new Date(b.created_at) : new Date(0);
+          return dateB - dateA;
+        });
+        break;
+      default:
+        break;
+    }
 
     setFilteredProducts(result);
   }, [products, searchTerm, filters]);

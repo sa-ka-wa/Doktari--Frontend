@@ -29,12 +29,6 @@ const Header = ({ brand = "Prolific" }) => {
       links.push({ to: "/staff/dashboard", label: "Staff Dashboard" });
     }
 
-    // For testing purposes, you can add a temporary link
-    // Remove this in production
-    if (process.env.NODE_ENV === "development") {
-      links.push({ to: "/staff/dashboard", label: "Staff Dashboard (Dev)" });
-    }
-
     return links;
   };
 
@@ -95,7 +89,7 @@ const Header = ({ brand = "Prolific" }) => {
             </>
           ) : (
             <>
-              <Link to="/products/catalog">Products</Link>
+              <Link to="/products">Products</Link>
               <Link to="/design">Custom Design</Link>
               <Link to="/about">About</Link>
               <Link to="/contact">Contact</Link>
@@ -231,10 +225,7 @@ const Header = ({ brand = "Prolific" }) => {
             </>
           ) : (
             <>
-              <Link
-                to="/products/catalog"
-                onClick={() => setMobileMenuOpen(false)}
-              >
+              <Link to="/products" onClick={() => setMobileMenuOpen(false)}>
                 Products
               </Link>
               <Link to="/design" onClick={() => setMobileMenuOpen(false)}>

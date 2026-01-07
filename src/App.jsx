@@ -16,7 +16,9 @@ function App() {
         <UserProvider>
           <CartProvider>
             <OrderProvider>
-              <AppRouter />
+              <div className="App">
+                <AppRouter />
+              </div>
             </OrderProvider>
           </CartProvider>
         </UserProvider>

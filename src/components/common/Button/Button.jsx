@@ -75,25 +75,41 @@ const Button = ({
   disabled = false,
   className = "",
   fullWidth = false,
+  loading = false,
   ...props
 }) => {
   // Filter out props that shouldn't go to DOM
   const domProps = { ...props };
   delete domProps.fullWidth;
+  delete domProps.loading;
 
   const buttonClass = `btn btn-${variant} btn-${size} ${
     fullWidth ? "btn-full" : ""
-  } ${className}`.trim();
+  } ${loading ? "btn-loading" : ""} ${className}`.trim();
 
   return (
     <button
       className={buttonClass}
       onClick={onClick}
       type={type}
-      disabled={disabled}
+      disabled={disabled || loading}
       {...domProps}
     >
-      {children}
+      {loading && (
+        <span className="btn-spinner">
+          <svg className="spinner" viewBox="0 0 50 50">
+            <circle
+              className="path"
+              cx="25"
+              cy="25"
+              r="20"
+              fill="none"
+              strokeWidth="5"
+            ></circle>
+          </svg>
+        </span>
+      )}
+      <span className="btn-content">{children}</span>
     </button>
   );
 };

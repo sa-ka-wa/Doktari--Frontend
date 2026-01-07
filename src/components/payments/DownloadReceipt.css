@@ -1,0 +1,66 @@
+.download-receipt {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.download-btn,
+.print-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+  color: #1f2937;
+  border: 1px solid #d1d5db;
+}
+
+.download-btn:hover,
+.print-btn:hover {
+  background: #f9fafb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.download-btn .icon,
+.print-btn .icon {
+  font-size: 1.2rem;
+}
+
+.download-btn {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  border: none;
+}
+
+.download-btn:hover {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+}
+
+.print-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+}
+
+.print-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+@media (max-width: 480px) {
+  .download-receipt {
+    flex-direction: column;
+  }
+
+  .download-btn,
+  .print-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

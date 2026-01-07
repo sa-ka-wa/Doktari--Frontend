@@ -173,3 +173,10 @@
 .input-full {
   width: 100%;
 }
+
+/* Textarea */
+.input-wrapper textarea.input {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+}
