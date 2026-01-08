@@ -6,15 +6,23 @@ const authService = {
    */
   async login(email, password) {
     const response = await apiClient.post("/auth/login", { email, password });
-    // Save user in localStorage for persistence
- const { user, token } = response.data;
-    
+    const data = response.data;
+
+    console.log("Login response data:", data);
+
+    // Handle different response structures
+    const user = data.user || data;
+    const token = data.token || data.access_token || data.auth_token;
+
+    console.log("Extracted user:", user);
+    console.log("Extracted token:", token);
+
     if (user && token) {
       localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("authToken", token);  // ✅ Consistent key
-      localStorage.setItem("token", token);       // ✅ Also save as backup
+      localStorage.setItem("authToken", token); // ✅ Consistent key
+      localStorage.setItem("token", token); // ✅ Also save as backup
     }
-    return response.data;
+    return { user, token };
   },
 
   /**
@@ -22,15 +30,26 @@ const authService = {
    */
   async register(userData) {
     const response = await apiClient.post("/auth/register", userData);
-   // Save user data consistently
-    const { user, token } = response.data;
-    
+    const data = response.data;
+
+    // Handle different response structures
+    const user = data.user || data;
+    const token = data.token || data.access_token || data.auth_token;
+    const sessionId = data.session_id || data.sessionId;
+
     if (user && token) {
       localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("authToken", token);  // ✅ Consistent key
-      localStorage.setItem("token", token);       // ✅ Also save as backup
+      localStorage.setItem("authToken", token); // ✅ Consistent key
+      localStorage.setItem("token", token); // ✅ Also save as backup
+      if (sessionId) {
+        localStorage.setItem("session_id", sessionId);
+      }
+      localStorage.setItem("token", token); // ✅ Also save as backup
+      if (sessionId) {
+        localStorage.setItem("session_id", sessionId);
+      }
     }
-    return response.data;
+    return { user, token };
   },
 
   /**
@@ -38,7 +57,7 @@ const authService = {
    */
   async getProfile() {
     const response = await apiClient.get("/auth/profile");
-     // Update stored user data
+    // Update stored user data
     if (response.data.user) {
       localStorage.setItem("user", JSON.stringify(response.data.user));
     }
@@ -61,9 +80,9 @@ const authService = {
    * Get the stored token from localStorage
    */
   getStoredToken() {
-    return localStorage.getItem("authToken") || 
-           localStorage.getItem("token") || 
-           null;
+    return (
+      localStorage.getItem("authToken") || localStorage.getItem("token") || null
+    );
   },
   /**
    * Check if user is authenticated
@@ -78,7 +97,7 @@ const authService = {
   logout() {
     localStorage.removeItem("user");
     localStorage.removeItem("authToken");
-       localStorage.removeItem("token");
+    localStorage.removeItem("token");
   },
 };
 

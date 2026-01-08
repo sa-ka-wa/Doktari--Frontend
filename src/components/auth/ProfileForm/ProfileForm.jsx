@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./ProfileForm.css";
+import apiClient from "../../../services/api/apiClient";
 
 // Helper function to get full image URL safely
 const getImageUrl = (imagePath, type = "avatar") => {
@@ -70,30 +71,24 @@ const ProfileForm = ({ user, onUpdate }) => {
       setIsLoading(true);
       console.log(`🖼️ Starting ${type} upload...`);
 
-      const token = localStorage.getItem("token");
       const formData = new FormData();
       formData.append("image", file);
       formData.append("type", type);
 
-      const res = await fetch(
-        `http://localhost:5000/api/users/${user.id}/upload-image`,
+      const res = await apiClient.post(
+        `/users/${user.id}/upload-image`,
+        formData,
         {
-          method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
           },
-          body: formData,
         }
       );
 
       console.log(`📥 ${type} upload response status:`, res.status);
+      console.log(`📥 ${type} upload response data:`, res.data);
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Failed to upload image: ${res.status} ${errorText}`);
-      }
-
-      const data = await res.json();
+      const data = res.data;
       console.log(`✅ ${type} upload successful:`, data);
 
       if (type === "avatar") {
@@ -207,24 +202,12 @@ const ProfileForm = ({ user, onUpdate }) => {
 
       console.log("📤 Sending update data:", updateData);
 
-      const res = await fetch(`http://localhost:5000/api/users/${user.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updateData),
-      });
+      const res = await apiClient.put(`/users/${user.id}`, updateData);
 
       console.log("📥 Update response status:", res.status);
+      console.log("📥 Update response data:", res.data);
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("❌ Server error response:", errorText);
-        throw new Error(`Failed to update profile: ${res.status} ${errorText}`);
-      }
-
-      const updatedUser = await res.json();
+      const updatedUser = res.data;
       console.log("✅ Update successful, received:", updatedUser);
 
       onUpdate(updatedUser);
