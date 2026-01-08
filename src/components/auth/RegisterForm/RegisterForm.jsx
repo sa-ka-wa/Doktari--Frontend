@@ -57,19 +57,8 @@ const RegisterForm = ({ onRegister }) => {
         role: "customer",
       });
 
-      // ✅ Store token in localStorage
-      if (res?.access_token) {
-        localStorage.setItem("token", res.access_token);
-      }
-      if (res?.user) {
-        localStorage.setItem("user", JSON.stringify(res.user));
-      }
-
       setSuccess("Account created successfully! Redirecting...");
       setFormData({ name: "", email: "", password: "", confirmPassword: "" });
-
-      // ✅ Navigate to profile (optional)
-      window.location.href = "/login";
     } catch (err) {
       console.error(err);
       setError(err.message || "Registration failed. Please try again.");

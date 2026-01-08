@@ -4,10 +4,12 @@ import authService from "../../../services/api/authService"; // ✅ handle API l
 import { useNavigate } from "react-router-dom";
 import "../../../components/auth/RegisterForm/RegisterForm.css";
 import { useBrand } from "../../../context/BrandContext";
+import { useAuth } from "../../../context/AuthContext";
 
 const Register = () => {
   const navigate = useNavigate();
   const { brand } = useBrand();
+  const { login } = useAuth();
   const handleRegister = async (formData) => {
     if (!brand?.id) {
       alert(
@@ -27,7 +29,12 @@ const Register = () => {
     try {
       const res = await authService.register(payload);
       console.log("Registered user:", res);
-      navigate("/login");
+      if (res.user && res.token) {
+        login(res.user, res.token);
+        navigate("/profile");
+      } else {
+        navigate("/login");
+      }
     } catch (err) {
       console.error("Registration failed:", err);
       console.error("Response data:", err.response?.data);
