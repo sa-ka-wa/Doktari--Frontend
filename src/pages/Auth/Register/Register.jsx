@@ -17,7 +17,9 @@ const Register = () => {
     }
 
     const payload = {
-      ...formData,
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
       brand_id: brand.id,
       role: "customer",
     };
