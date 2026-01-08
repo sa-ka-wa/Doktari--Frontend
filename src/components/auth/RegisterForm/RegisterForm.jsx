@@ -69,7 +69,11 @@ const RegisterForm = ({ onRegister }) => {
 
   const handleGoogleRegister = () => {
     console.log("🔗 Redirecting to Google signup...");
-    window.location.href = "http://localhost:5000/api/auth/google"; // adjust backend route
+    const apiBase = import.meta.env.VITE_API_BASE_URL;
+    const url = apiBase.startsWith("http")
+      ? `${apiBase}/auth/google`
+      : `http://localhost:5000${apiBase}/auth/google`;
+    window.location.href = url;
   };
 
   return (
