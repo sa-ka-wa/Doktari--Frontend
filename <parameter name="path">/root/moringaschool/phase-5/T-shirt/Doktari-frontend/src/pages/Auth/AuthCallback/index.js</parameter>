@@ -1,0 +1,1 @@
+<parameter name="content">export { default } from './AuthCallback'; </parameter>

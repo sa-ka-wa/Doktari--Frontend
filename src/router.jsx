@@ -42,6 +42,7 @@ import PaymentFailed from "./pages/Payments/Failed/PaymentFailed";
 
 // Protected Route
 import ProtectedRoute from "./router/ProtectedRoute";
+import AuthCallback from "./pages/Auth/Callback/Callback";
 
 // Custom Design Pages
 import CustomDesign from "./pages/CustomDesign/CustomDesign";
@@ -61,6 +62,7 @@ const AppRouter = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/brands" element={<BrandDirectory />} />
         <Route path="/brands/:brandId" element={<BrandDetailPage />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
 
         {/* Customer Protected Routes */}
         <Route
