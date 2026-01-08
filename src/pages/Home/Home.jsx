@@ -18,7 +18,11 @@ const Home = () => {
 
     // 2️⃣ Send to backend if detected
     if (subdomain && subdomain !== "www" && subdomain !== "localhost") {
-      fetch("http://localhost:5000/api/brands/update-subdomain", {
+      const apiBase = import.meta.env.VITE_API_BASE_URL;
+      const url = apiBase.startsWith("http")
+        ? `${apiBase}/brands/update-subdomain`
+        : `http://localhost:5000${apiBase}/brands/update-subdomain`;
+      fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
