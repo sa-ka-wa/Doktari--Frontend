@@ -17,7 +17,9 @@ const Register = () => {
     }
 
     const payload = {
-      ...formData,
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
       brand_id: brand.id,
       role: "customer",
     };
@@ -28,7 +30,12 @@ const Register = () => {
       navigate("/login");
     } catch (err) {
       console.error("Registration failed:", err);
-      alert(err.response?.data?.message || "Registration failed.");
+      console.error("Response data:", err.response?.data);
+      alert(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Registration failed."
+      );
     }
   };
 
