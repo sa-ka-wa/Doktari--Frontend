@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import authService from "../services/api/authService";
+import { setAuthToken } from "../services/api/apiClient";
 
 // Create the context
 const AuthContext = createContext();
@@ -18,21 +19,29 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Get user from localStorage
-    const storedUser = authService.getStoredUser();
+  // Set token synchronously if exists
+  const token = authService.getStoredToken();
+  if (token) {
+    setAuthToken(token);
+  }
 
-    if (storedUser) {
+  useEffect(() => {
+    const storedUser = authService.getStoredUser();
+    const token = authService.getStoredToken();
+
+    if (token) {
+      setAuthToken(token);
+    }
+
+    if (token && storedUser) {
       setUser(storedUser);
 
-      // Verify token with backend
       authService
         .getProfile()
-        .then((userData) => {
-          setUser(userData);
+        .then((res) => {
+          setUser(res.user || res);
         })
         .catch(() => {
-          // Token invalid or expired
           authService.logout();
           setUser(null);
         })
@@ -45,7 +54,10 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const response = await authService.login(email, password);
-      setUser(response.user || response); // depending on backend structure
+      console.log("AuthContext login response:", response);
+      setAuthToken(response.token);
+      console.log("Set auth token:", response.token);
+      setUser(response.user);
       return response;
     } catch (error) {
       throw error;
@@ -55,7 +67,8 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const response = await authService.register(userData);
-      setUser(response.user || response);
+      setAuthToken(response.token);
+      setUser(response.user);
       return response;
     } catch (error) {
       throw error;
